@@ -47,7 +47,7 @@ export function HowToPlay({ onBack }: HowToPlayProps) {
         <section style={{ marginBottom: '24px' }}>
           <h2 style={{ fontSize: '20px', marginBottom: '12px' }}>Setup</h2>
           <ul style={{ opacity: 0.9, lineHeight: 1.8, paddingLeft: '20px' }}>
-            <li>Each player receives 4 face-down cards (you cannot look at these)</li>
+            <li>Each player receives 3 face-down cards (you cannot look at these)</li>
             <li>The remaining cards are dealt to players' hands</li>
             <li>All 3s are automatically discarded at the start</li>
           </ul>
@@ -57,6 +57,7 @@ export function HowToPlay({ onBack }: HowToPlayProps) {
           <h2 style={{ fontSize: '20px', marginBottom: '12px' }}>Special Cards</h2>
           <ul style={{ opacity: 0.9, lineHeight: 1.8, paddingLeft: '20px' }}>
             <li><strong>2s (Wild)</strong> - Can be played on any card, next player continues</li>
+            <li><strong>8s (Wild)</strong> - Acts the same as a 2, as well as reversing the flow of the game</li>
             <li><strong>10s (Burn)</strong> - Discards the entire pyre, you go again</li>
           </ul>
         </section>
