@@ -77,10 +77,45 @@ npm run dev
 
 The frontend will connect to `ws://localhost:3001` by default. To change this, set the `VITE_WS_URL` environment variable.
 
+## Testing
+
+```bash
+npm test          # Run tests in watch mode
+npm run test:run  # Run tests once
+```
+
+## Deployment
+
+The app is designed for deployment on **Vercel** (frontend) + **Railway** (backend).
+
+### Frontend (Vercel)
+
+1. Connect your GitHub repo to [Vercel](https://vercel.com)
+2. Set the root directory to `/` (default)
+3. Add environment variable:
+   - `VITE_WS_URL` = `wss://your-railway-app.railway.app` (your Railway WebSocket URL)
+4. Deploy - Vercel auto-detects Vite and builds automatically
+
+### Backend (Railway)
+
+1. Connect your GitHub repo to [Railway](https://railway.app)
+2. Set the root directory to `/server`
+3. Railway auto-detects Node.js and runs `npm run build` then `npm run start`
+4. Note the public URL (e.g., `your-app.railway.app`) - use this for `VITE_WS_URL`
+
+### Environment Variables
+
+| Variable       | Service           | Description                                              |
+|----------------|-------------------|----------------------------------------------------------|
+| `VITE_WS_URL`  | Frontend (Vercel) | WebSocket server URL, e.g., `wss://your-app.railway.app` |
+| `PORT`         | Backend (Railway) | Auto-set by Railway                                      |
+
 ## Tech Stack
 
 - **Frontend**: React, TypeScript, Vite, Framer Motion
 - **Backend**: Node.js, WebSocket (ws)
+- **Testing**: Vitest
+- **Deployment**: Vercel (frontend), Railway (backend)
 
 ## Project Structure
 
