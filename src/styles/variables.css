@@ -1,0 +1,44 @@
+:root {
+  /* Card dimensions */
+  --card-width: 80px;
+  --card-height: 112px;
+  --card-radius: 8px;
+
+  /* Colors */
+  --color-red: #e53935;
+  --color-black: #212121;
+  --color-card-bg: #ffffff;
+  --color-card-back: #1565c0;
+  --color-card-back-pattern: #1976d2;
+  --color-border: #e0e0e0;
+
+  /* Game board */
+  --color-bg: #1b5e20;
+  --color-bg-dark: #0d3d0f;
+  --color-pyre: rgba(255, 255, 255, 0.1);
+
+  /* UI */
+  --color-primary: #2196f3;
+  --color-primary-hover: #1976d2;
+  --color-danger: #f44336;
+  --color-success: #4caf50;
+  --color-text: #212121;
+  --color-text-light: #757575;
+  --color-text-inverse: #ffffff;
+
+  /* Shadows */
+  --shadow-card: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-card-selected: 0 0 0 3px var(--color-primary);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+
+  /* Z-index layers */
+  --z-card: 1;
+  --z-card-hover: 10;
+  --z-modal: 100;
+  --z-overlay: 50;
+}
