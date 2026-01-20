@@ -1,9 +1,9 @@
 import type { Card, Rank } from '../types';
-import { RANK_VALUES, WILD_RANK, BURN_RANK } from '../constants';
+import { RANK_VALUES, WILD_RANK, BURN_RANK, REVERSE_RANK } from '../constants';
 
 export function canPlayOn(cardToPlay: Card, topCard: Card | null): boolean {
-  // 2s (wild) and 10s (burn) can always be played
-  if (cardToPlay.rank === WILD_RANK || cardToPlay.rank === BURN_RANK) {
+  // 2s (wild), 8s (reverse wild), and 10s (burn) can always be played
+  if (cardToPlay.rank === WILD_RANK || cardToPlay.rank === BURN_RANK || cardToPlay.rank === REVERSE_RANK) {
     return true;
   }
 
@@ -12,8 +12,8 @@ export function canPlayOn(cardToPlay: Card, topCard: Card | null): boolean {
     return true;
   }
 
-  // If top card is a 2 (wild), any card can be played on it
-  if (topCard.rank === WILD_RANK) {
+  // If top card is a 2 (wild) or 8 (reverse), any card can be played on it
+  if (topCard.rank === WILD_RANK || topCard.rank === REVERSE_RANK) {
     return true;
   }
 
@@ -37,11 +37,15 @@ export function isValidPlay(cards: Card[], topCard: Card | null): boolean {
 }
 
 export function isWildCard(card: Card): boolean {
-  return card.rank === WILD_RANK;
+  return card.rank === WILD_RANK || card.rank === REVERSE_RANK;
 }
 
 export function isBurnCard(card: Card): boolean {
   return card.rank === BURN_RANK;
+}
+
+export function isReverseCard(card: Card): boolean {
+  return card.rank === REVERSE_RANK;
 }
 
 export function getRankValue(rank: Rank): number {

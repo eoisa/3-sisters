@@ -23,6 +23,7 @@ export const RANK_VALUES: Record<Rank, number> = {
 export const WILD_RANK: Rank = '2';
 export const BURN_RANK: Rank = '10';
 export const DISCARD_RANK: Rank = '3';
+export const REVERSE_RANK: Rank = '8';
 
 export const SUIT_SYMBOLS: Record<Suit, string> = {
   hearts: '♥',

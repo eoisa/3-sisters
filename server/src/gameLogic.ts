@@ -1,4 +1,4 @@
-import type { Card, GameState, Player, TurnAction, Suit, Rank } from './types.js';
+import type { Card, GameState, Player, TurnAction, Suit, Rank, PlayDirection } from './types.js';
 
 const SUITS: Suit[] = ['hearts', 'diamonds', 'clubs', 'spades'];
 const RANKS: Rank[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -6,7 +6,14 @@ const RANK_VALUES: Record<Rank, number> = {
   '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9,
   '10': 10, 'J': 11, 'Q': 12, 'K': 13, 'A': 14, '2': 15,
 };
-const FACE_DOWN_CARDS_COUNT = 4;
+const FACE_DOWN_CARDS_COUNT = 3;
+const WILD_RANK: Rank = '2';
+const BURN_RANK: Rank = '10';
+const REVERSE_RANK: Rank = '8';
+
+function getNextPlayerIndex(currentIndex: number, playerCount: number, direction: PlayDirection): number {
+  return (currentIndex + direction + playerCount) % playerCount;
+}
 
 export function createDeck(): Card[] {
   const deck: Card[] = [];
@@ -28,9 +35,11 @@ export function shuffleDeck(deck: Card[]): Card[] {
 }
 
 export function canPlayOn(cardToPlay: Card, topCard: Card | null): boolean {
-  if (cardToPlay.rank === '2' || cardToPlay.rank === '10') return true;
+  // 2s (wild), 8s (reverse), and 10s (burn) can always be played
+  if (cardToPlay.rank === WILD_RANK || cardToPlay.rank === BURN_RANK || cardToPlay.rank === REVERSE_RANK) return true;
   if (!topCard) return true;
-  if (topCard.rank === '2') return true;
+  // If top card is a 2 (wild) or 8 (reverse), any card can be played on it
+  if (topCard.rank === WILD_RANK || topCard.rank === REVERSE_RANK) return true;
   return RANK_VALUES[cardToPlay.rank] >= RANK_VALUES[topCard.rank];
 }
 
@@ -42,7 +51,11 @@ export function isValidPlay(cards: Card[], topCard: Card | null): boolean {
 }
 
 export function isBurnCard(card: Card): boolean {
-  return card.rank === '10';
+  return card.rank === BURN_RANK;
+}
+
+export function isReverseCard(card: Card): boolean {
+  return card.rank === REVERSE_RANK;
 }
 
 export function createInitialGameState(playerInfos: { id: string; name: string }[]): GameState {
@@ -55,7 +68,7 @@ export function createInitialGameState(playerInfos: { id: string; name: string }
     isConnected: true,
   }));
 
-  // Deal 4 face-down cards to each player
+  // Deal 3 face-down cards to each player
   let deckIndex = 0;
   for (const player of players) {
     player.faceDownCards = deck.slice(deckIndex, deckIndex + FACE_DOWN_CARDS_COUNT);
@@ -74,6 +87,7 @@ export function createInitialGameState(playerInfos: { id: string; name: string }
     phase: 'discardingThrees',
     players,
     currentPlayerIndex: 0,
+    direction: 1,
     pyre: [],
     discardPile: [],
     turnHistory: [],
@@ -142,14 +156,21 @@ export function playCards(state: GameState, playerId: string, cardIds: string[])
   newPlayers[playerIndex] = { ...player, hand: newHand };
 
   const shouldBurn = cardsToPlay.some(isBurnCard);
+  const shouldReverse = cardsToPlay.some(isReverseCard);
   let newPyre: Card[];
   let newDiscardPile: Card[];
   let actionType: TurnAction['type'];
+  let newDirection: PlayDirection = state.direction;
 
   if (shouldBurn) {
     newPyre = [];
     newDiscardPile = [...state.discardPile, ...state.pyre, ...cardsToPlay];
     actionType = 'burn';
+  } else if (shouldReverse) {
+    newPyre = [...state.pyre, ...cardsToPlay];
+    newDiscardPile = state.discardPile;
+    actionType = 'reverse';
+    newDirection = (state.direction * -1) as PlayDirection;
   } else {
     newPyre = [...state.pyre, ...cardsToPlay];
     newDiscardPile = state.discardPile;
@@ -171,20 +192,25 @@ export function playCards(state: GameState, playerId: string, cardIds: string[])
       players: newPlayers,
       pyre: newPyre,
       discardPile: newDiscardPile,
+      direction: newDirection,
       turnHistory: [...state.turnHistory, turnAction],
       winner: playerId,
     };
   }
 
-  const nextPlayerIndex = shouldBurn
-    ? state.currentPlayerIndex
-    : (state.currentPlayerIndex + 1) % state.players.length;
+  // Burn ends turn, reverse uses new direction
+  const nextPlayerIndex = getNextPlayerIndex(
+    state.currentPlayerIndex,
+    state.players.length,
+    newDirection
+  );
 
   return {
     ...state,
     players: newPlayers,
     pyre: newPyre,
     discardPile: newDiscardPile,
+    direction: newDirection,
     currentPlayerIndex: nextPlayerIndex,
     turnHistory: [...state.turnHistory, turnAction],
   };
@@ -209,7 +235,11 @@ export function pickupPyre(state: GameState, playerId: string): GameState | null
     timestamp: Date.now(),
   };
 
-  const nextPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+  const nextPlayerIndex = getNextPlayerIndex(
+    state.currentPlayerIndex,
+    state.players.length,
+    state.direction
+  );
 
   return {
     ...state,
@@ -238,12 +268,14 @@ export function flipFaceDown(state: GameState, playerId: string, cardIndex: numb
 
   const canPlay = isValidPlay([card], topCard);
   const shouldBurn = isBurnCard(card);
+  const shouldReverse = isReverseCard(card);
 
   let newPyre: Card[];
   let newDiscardPile: Card[];
   let newHand: Card[];
   let actionType: TurnAction['type'];
   let nextPlayerIndex: number;
+  let newDirection: PlayDirection = state.direction;
 
   if (canPlay) {
     if (shouldBurn) {
@@ -251,20 +283,27 @@ export function flipFaceDown(state: GameState, playerId: string, cardIndex: numb
       newDiscardPile = [...state.discardPile, ...state.pyre, card];
       newHand = [];
       actionType = 'burn';
-      nextPlayerIndex = state.currentPlayerIndex;
+      nextPlayerIndex = getNextPlayerIndex(state.currentPlayerIndex, state.players.length, state.direction);
+    } else if (shouldReverse) {
+      newPyre = [...state.pyre, card];
+      newDiscardPile = state.discardPile;
+      newHand = [];
+      actionType = 'reverse';
+      newDirection = (state.direction * -1) as PlayDirection;
+      nextPlayerIndex = getNextPlayerIndex(state.currentPlayerIndex, state.players.length, newDirection);
     } else {
       newPyre = [...state.pyre, card];
       newDiscardPile = state.discardPile;
       newHand = [];
       actionType = 'flipFaceDown';
-      nextPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+      nextPlayerIndex = getNextPlayerIndex(state.currentPlayerIndex, state.players.length, state.direction);
     }
   } else {
     newPyre = [];
     newHand = [...state.pyre, card];
     newDiscardPile = state.discardPile;
     actionType = 'pickup';
-    nextPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+    nextPlayerIndex = getNextPlayerIndex(state.currentPlayerIndex, state.players.length, state.direction);
   }
 
   const newPlayers = [...state.players];
@@ -289,6 +328,7 @@ export function flipFaceDown(state: GameState, playerId: string, cardIndex: numb
       players: newPlayers,
       pyre: newPyre,
       discardPile: newDiscardPile,
+      direction: newDirection,
       turnHistory: [...state.turnHistory, turnAction],
       winner: playerId,
     };
@@ -299,6 +339,7 @@ export function flipFaceDown(state: GameState, playerId: string, cardIndex: numb
     players: newPlayers,
     pyre: newPyre,
     discardPile: newDiscardPile,
+    direction: newDirection,
     currentPlayerIndex: nextPlayerIndex,
     turnHistory: [...state.turnHistory, turnAction],
   };

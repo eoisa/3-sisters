@@ -1,18 +1,23 @@
-import type { GameState, GameAction, Player, Card, TurnAction } from '../types';
+import type { GameState, GameAction, Player, Card, TurnAction, PlayDirection } from '../types';
 import { FACE_DOWN_CARDS_COUNT, DISCARD_RANK } from '../constants';
 import { createDeck, shuffleDeck, removeCardsById, getCardById } from '../utils/deck';
-import { isValidPlay, isBurnCard } from '../utils/cardComparison';
+import { isValidPlay, isBurnCard, isReverseCard } from '../utils/cardComparison';
 
 export const initialGameState: GameState = {
   phase: 'setup',
   players: [],
   currentPlayerIndex: 0,
+  direction: 1,
   pyre: [],
   discardPile: [],
   turnHistory: [],
   winner: null,
   firstThreeDiscarderId: null,
 };
+
+function getNextPlayerIndex(currentIndex: number, playerCount: number, direction: PlayDirection): number {
+  return (currentIndex + direction + playerCount) % playerCount;
+}
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
@@ -52,7 +57,7 @@ function startGame(state: GameState, playerNames: string[]): GameState {
     isConnected: true,
   }));
 
-  // Deal 4 face-down cards to each player
+  // Deal 3 face-down cards to each player
   let deckIndex = 0;
   for (const player of players) {
     player.faceDownCards = deck.slice(deckIndex, deckIndex + FACE_DOWN_CARDS_COUNT);
@@ -72,6 +77,7 @@ function startGame(state: GameState, playerNames: string[]): GameState {
     phase: 'discardingThrees',
     players,
     currentPlayerIndex: 0,
+    direction: 1,
     pyre: [],
     discardPile: [],
     turnHistory: [],
@@ -155,18 +161,26 @@ function playCards(state: GameState, playerId: string, cardIds: string[]): GameS
   const newPlayers = [...state.players];
   newPlayers[playerIndex] = { ...player, hand: newHand };
 
-  // Check if it's a burn (10)
+  // Check if it's a burn (10) or reverse (8)
   const shouldBurn = cardsToPlay.some(isBurnCard);
+  const shouldReverse = cardsToPlay.some(isReverseCard);
 
   let newPyre: Card[];
   let newDiscardPile: Card[];
   let actionType: TurnAction['type'];
+  let newDirection: PlayDirection = state.direction;
 
   if (shouldBurn) {
     // Burn the pyre
     newPyre = [];
     newDiscardPile = [...state.discardPile, ...state.pyre, ...cardsToPlay];
     actionType = 'burn';
+  } else if (shouldReverse) {
+    // Reverse direction
+    newPyre = [...state.pyre, ...cardsToPlay];
+    newDiscardPile = state.discardPile;
+    actionType = 'reverse';
+    newDirection = (state.direction * -1) as PlayDirection;
   } else {
     // Add to pyre
     newPyre = [...state.pyre, ...cardsToPlay];
@@ -190,21 +204,25 @@ function playCards(state: GameState, playerId: string, cardIds: string[]): GameS
       players: newPlayers,
       pyre: newPyre,
       discardPile: newDiscardPile,
+      direction: newDirection,
       turnHistory: [...state.turnHistory, turnAction],
       winner: playerId,
     };
   }
 
-  // Move to next player (if burned, same player goes again)
-  const nextPlayerIndex = shouldBurn
-    ? state.currentPlayerIndex
-    : (state.currentPlayerIndex + 1) % state.players.length;
+  // Move to next player (burn ends turn, reverse uses new direction)
+  const nextPlayerIndex = getNextPlayerIndex(
+    state.currentPlayerIndex,
+    state.players.length,
+    newDirection
+  );
 
   return {
     ...state,
     players: newPlayers,
     pyre: newPyre,
     discardPile: newDiscardPile,
+    direction: newDirection,
     currentPlayerIndex: nextPlayerIndex,
     turnHistory: [...state.turnHistory, turnAction],
   };
@@ -231,7 +249,11 @@ function pickupPyre(state: GameState, playerId: string): GameState {
   };
 
   // Move to next player
-  const nextPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+  const nextPlayerIndex = getNextPlayerIndex(
+    state.currentPlayerIndex,
+    state.players.length,
+    state.direction
+  );
 
   return {
     ...state,
@@ -264,28 +286,38 @@ function flipFaceDown(state: GameState, playerId: string, cardIndex: number): Ga
   // Check if the card can be played
   const canPlay = isValidPlay([card], topCard);
   const shouldBurn = isBurnCard(card);
+  const shouldReverse = isReverseCard(card);
 
   let newPyre: Card[];
   let newDiscardPile: Card[];
   let newHand: Card[];
   let actionType: TurnAction['type'];
   let nextPlayerIndex: number;
+  let newDirection: PlayDirection = state.direction;
 
   if (canPlay) {
     if (shouldBurn) {
-      // Burn the pyre
+      // Burn the pyre - turn ends
       newPyre = [];
       newDiscardPile = [...state.discardPile, ...state.pyre, card];
       newHand = [];
       actionType = 'burn';
-      nextPlayerIndex = state.currentPlayerIndex; // Same player goes again
+      nextPlayerIndex = getNextPlayerIndex(state.currentPlayerIndex, state.players.length, state.direction);
+    } else if (shouldReverse) {
+      // Reverse direction
+      newPyre = [...state.pyre, card];
+      newDiscardPile = state.discardPile;
+      newHand = [];
+      actionType = 'reverse';
+      newDirection = (state.direction * -1) as PlayDirection;
+      nextPlayerIndex = getNextPlayerIndex(state.currentPlayerIndex, state.players.length, newDirection);
     } else {
       // Add to pyre
       newPyre = [...state.pyre, card];
       newDiscardPile = state.discardPile;
       newHand = [];
       actionType = 'flipFaceDown';
-      nextPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+      nextPlayerIndex = getNextPlayerIndex(state.currentPlayerIndex, state.players.length, state.direction);
     }
   } else {
     // Card can't be played - pick up pyre including the flipped card
@@ -293,7 +325,7 @@ function flipFaceDown(state: GameState, playerId: string, cardIndex: number): Ga
     newHand = [...state.pyre, card];
     newDiscardPile = state.discardPile;
     actionType = 'pickup';
-    nextPlayerIndex = (state.currentPlayerIndex + 1) % state.players.length;
+    nextPlayerIndex = getNextPlayerIndex(state.currentPlayerIndex, state.players.length, state.direction);
   }
 
   const newPlayers = [...state.players];
@@ -323,6 +355,7 @@ function flipFaceDown(state: GameState, playerId: string, cardIndex: number): Ga
       players: newPlayers,
       pyre: newPyre,
       discardPile: newDiscardPile,
+      direction: newDirection,
       turnHistory: [...state.turnHistory, turnAction],
       winner: playerId,
     };
@@ -333,6 +366,7 @@ function flipFaceDown(state: GameState, playerId: string, cardIndex: number): Ga
     players: newPlayers,
     pyre: newPyre,
     discardPile: newDiscardPile,
+    direction: newDirection,
     currentPlayerIndex: nextPlayerIndex,
     turnHistory: [...state.turnHistory, turnAction],
   };

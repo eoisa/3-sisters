@@ -249,6 +249,7 @@ export class Room {
       phase: this.gameState.phase,
       players: clientPlayers,
       currentPlayerIndex: this.gameState.currentPlayerIndex,
+      direction: this.gameState.direction,
       pyre: this.gameState.pyre,
       turnHistory: this.gameState.turnHistory,
       winner: this.gameState.winner,

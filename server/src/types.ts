@@ -22,9 +22,11 @@ export type GamePhase =
   | 'playing'
   | 'finished';
 
+export type PlayDirection = 1 | -1;
+
 export interface TurnAction {
   playerId: string;
-  type: 'play' | 'pickup' | 'discardThree' | 'burn' | 'flipFaceDown';
+  type: 'play' | 'pickup' | 'discardThree' | 'burn' | 'flipFaceDown' | 'reverse';
   cards: Card[];
   timestamp: number;
 }
@@ -33,6 +35,7 @@ export interface GameState {
   phase: GamePhase;
   players: Player[];
   currentPlayerIndex: number;
+  direction: PlayDirection;
   pyre: Card[];
   discardPile: Card[];
   turnHistory: TurnAction[];
@@ -68,6 +71,7 @@ export interface ClientGameState {
   phase: GamePhase;
   players: ClientPlayer[];
   currentPlayerIndex: number;
+  direction: PlayDirection;
   pyre: Card[];
   turnHistory: TurnAction[];
   winner: string | null;

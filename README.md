@@ -15,11 +15,12 @@ Standard 52-card deck with jokers removed, well shuffled.
 ### Special Cards
 
 - **2s** - Wild cards. Playing a 2 effectively skips to the next player.
-- **10s** - "Burn the pyre." Discards all cards currently in play.
+- **8s** - Reverse wild cards. Playing an 8 reverses the direction of play and acts as a wild.
+- **10s** - "Burn the pyre." Discards all cards currently in play and ends your turn.
 
 ### Setup
 
-1. Deal 4 cards face down to each player. Players cannot look at these cards.
+1. Deal 3 cards face down to each player. Players cannot look at these cards.
 2. Deal the remaining cards one at a time to each player until the deck is empty. These cards form each player's hand and can be looked at (but not shared with other players).
 
 ### Gameplay
@@ -30,9 +31,10 @@ Standard 52-card deck with jokers removed, well shuffled.
 
 3. **Special plays:**
    - Play a **2** (wild) at any time - skips to the next player.
-   - Play a **10** at any time - all cards in the pyre (cards in play that have been revealed) are discarded.
+   - Play an **8** (reverse) at any time - reverses the direction of play and acts as a wild.
+   - Play a **10** at any time - burns the pyre (discards all cards in play) and ends your turn.
 
-4. **Picking up the pyre:** If you cannot play a card higher than the last one played (and don't have a 2 or 10), you must pick up all cards in the pyre and add them to your hand.
+4. **Picking up the pyre:** If you cannot play a card higher than the last one played (and don't have a 2, 8, or 10), you must pick up all cards in the pyre and add them to your hand.
 
 5. **Face-down cards:** Once your hand is empty, you begin playing your face-down cards. On your turn, choose one face-down card and flip it to play it.
 
@@ -45,7 +47,7 @@ The first player to get rid of all their cards (both hand and face-down cards) w
 - **Single Player**: Play against 2-7 AI opponents with three difficulty levels (Easy, Medium, Hard)
 - **Local Game (Hotseat)**: 3-8 players can play on the same device, passing it between turns
 - **Online Multiplayer**: Create/join rooms with codes, play over WebSockets
-- **Full Game Logic**: Card dealing, 3s discarding, playing higher cards, wild 2s, burning 10s, face-down card flipping
+- **Full Game Logic**: Card dealing, 3s discarding, playing higher cards, wild 2s, reverse 8s, burning 10s, face-down card flipping
 - **Responsive UI**: Card hand fan layout, pyre display, game log, winner overlay
 
 ## Development
