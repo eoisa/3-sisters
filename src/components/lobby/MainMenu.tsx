@@ -1,12 +1,13 @@
 import { Button } from '../ui';
 
 interface MainMenuProps {
+  onSinglePlayer: () => void;
   onLocalGame: () => void;
   onOnlineGame: () => void;
   onHowToPlay: () => void;
 }
 
-export function MainMenu({ onLocalGame, onOnlineGame, onHowToPlay }: MainMenuProps) {
+export function MainMenu({ onSinglePlayer, onLocalGame, onOnlineGame, onHowToPlay }: MainMenuProps) {
   return (
     <div
       style={{
@@ -55,7 +56,10 @@ export function MainMenu({ onLocalGame, onOnlineGame, onHowToPlay }: MainMenuPro
           maxWidth: '300px',
         }}
       >
-        <Button variant="primary" size="large" onClick={onLocalGame}>
+        <Button variant="primary" size="large" onClick={onSinglePlayer}>
+          Single Player
+        </Button>
+        <Button variant="secondary" size="large" onClick={onLocalGame}>
           Local Game
         </Button>
         <Button variant="secondary" size="large" onClick={onOnlineGame}>

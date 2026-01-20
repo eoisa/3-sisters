@@ -42,6 +42,7 @@ The first player to get rid of all their cards (both hand and face-down cards) w
 
 ## Features
 
+- **Single Player**: Play against 2-7 AI opponents with three difficulty levels (Easy, Medium, Hard)
 - **Local Game (Hotseat)**: 3-8 players can play on the same device, passing it between turns
 - **Online Multiplayer**: Create/join rooms with codes, play over WebSockets
 - **Full Game Logic**: Card dealing, 3s discarding, playing higher cards, wild 2s, burning 10s, face-down card flipping
@@ -87,15 +88,15 @@ The frontend will connect to `ws://localhost:3001` by default. To change this, s
 │   ├── types/              # TypeScript types
 │   ├── constants/          # Game constants
 │   ├── utils/              # Deck and card utilities
-│   ├── game/               # Game reducer and logic
-│   ├── hooks/              # useLocalGame, useOnlineGame
+│   ├── game/               # Game reducer, logic, and AI
+│   ├── hooks/              # useLocalGame, useOnlineGame, useSinglePlayerGame
 │   ├── context/            # GameContext
 │   ├── components/         # UI components
 │   │   ├── card/           # Card, CardHand, FaceDownCards
 │   │   ├── player/         # PlayerArea, OpponentArea
 │   │   ├── game/           # GameBoard, Pyre, etc.
 │   │   └── lobby/          # MainMenu, LocalSetup, OnlineLobby
-│   └── pages/              # LocalGame page
+│   └── pages/              # LocalGame, SinglePlayerGame pages
 ├── server/                 # WebSocket multiplayer server
 │   └── src/
 │       ├── index.ts        # Server entry point
