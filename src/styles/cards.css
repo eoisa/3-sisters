@@ -115,15 +115,41 @@
   transform: rotateY(180deg) translateY(-8px);
 }
 
+/* Card hand container (handles scrolling) */
+.card-hand-container {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 20px;
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.card-hand-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.card-hand-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.card-hand-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
 /* Card in a hand (fan layout) */
 .card-hand {
+  --card-overlap: -30px;
   display: flex;
   justify-content: center;
-  padding: 20px;
+  min-width: min-content;
+  padding-bottom: 20px; /* Space for selected card lift */
 }
 
 .card-hand .card {
-  margin-left: -30px;
+  margin-left: var(--card-overlap);
   transition: transform var(--transition-fast), margin var(--transition-fast);
 }
 
