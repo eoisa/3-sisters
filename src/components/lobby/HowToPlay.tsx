@@ -48,6 +48,7 @@ export function HowToPlay({ onBack }: HowToPlayProps) {
           <h2 style={{ fontSize: '20px', marginBottom: '12px' }}>Setup</h2>
           <ul style={{ opacity: 0.9, lineHeight: 1.8, paddingLeft: '20px' }}>
             <li>Each player receives 3 face-down cards (you cannot look at these)</li>
+            <li>Each player receives 3 face-up cards (visible to all players)</li>
             <li>The remaining cards are dealt to players' hands</li>
             <li>All 3s are automatically discarded at the start</li>
           </ul>
@@ -68,14 +69,15 @@ export function HowToPlay({ onBack }: HowToPlayProps) {
             <li>Play a card equal to or higher than the top card of the pyre</li>
             <li>You can play multiple cards if they're the same rank</li>
             <li>If you can't play, pick up the entire pyre</li>
-            <li>When your hand is empty, flip your face-down cards one at a time</li>
+            <li>When your hand is empty, play your face-up cards</li>
+            <li>When face-up cards are gone, flip face-down cards one at a time</li>
           </ul>
         </section>
 
         <section>
           <h2 style={{ fontSize: '20px', marginBottom: '12px' }}>Winning</h2>
           <p style={{ opacity: 0.9, lineHeight: 1.6 }}>
-            The first player to get rid of all their cards (hand and face-down) wins!
+            The first player to get rid of all their cards (hand, face-up, and face-down) wins!
           </p>
         </section>
       </div>

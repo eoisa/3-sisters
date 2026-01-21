@@ -21,7 +21,8 @@ Standard 52-card deck with jokers removed, well shuffled.
 ### Setup
 
 1. Deal 3 cards face down to each player. Players cannot look at these cards.
-2. Deal the remaining cards one at a time to each player until the deck is empty. These cards form each player's hand and can be looked at (but not shared with other players).
+2. Deal 3 cards face up to each player, placed on top of the face-down cards. These are visible to all players.
+3. Deal the remaining cards one at a time to each player until the deck is empty. These cards form each player's hand and can be looked at (but not shared with other players).
 
 ### Gameplay
 
@@ -36,18 +37,20 @@ Standard 52-card deck with jokers removed, well shuffled.
 
 4. **Picking up the pyre:** If you cannot play a card higher than the last one played (and don't have a 2, 8, or 10), you must pick up all cards in the pyre and add them to your hand.
 
-5. **Face-down cards:** Once your hand is empty, you begin playing your face-down cards. On your turn, choose one face-down card and flip it to play it.
+5. **Face-up cards:** Once your hand is empty, you begin playing your face-up cards. These are visible to all players, so choose wisely!
+
+6. **Face-down cards:** Once both your hand and face-up cards are empty, you begin playing your face-down cards. On your turn, choose one face-down card and flip it to play it.
 
 ### Winning
 
-The first player to get rid of all their cards (both hand and face-down cards) wins the game.
+The first player to get rid of all their cards (hand, face-up, and face-down cards) wins the game.
 
 ## Features
 
 - **Single Player**: Play against 2-7 AI opponents with three difficulty levels (Easy, Medium, Hard)
 - **Local Game (Hotseat)**: 3-8 players can play on the same device, passing it between turns
 - **Online Multiplayer**: Create/join rooms with codes, play over WebSockets
-- **Full Game Logic**: Card dealing, 3s discarding, playing higher cards, wild 2s, reverse 8s, burning 10s, face-down card flipping
+- **Full Game Logic**: Card dealing, 3s discarding, playing higher cards, wild 2s, reverse 8s, burning 10s, face-up cards, face-down card flipping
 - **Responsive UI**: Card hand fan layout, pyre display, game log, winner overlay
 
 ## Development
@@ -129,7 +132,7 @@ The app is designed for deployment on **Vercel** (frontend) + **Railway** (backe
 │   ├── hooks/              # useLocalGame, useOnlineGame, useSinglePlayerGame
 │   ├── context/            # GameContext
 │   ├── components/         # UI components
-│   │   ├── card/           # Card, CardHand, FaceDownCards
+│   │   ├── card/           # Card, CardHand, FaceUpCards, FaceDownCards
 │   │   ├── player/         # PlayerArea, OpponentArea
 │   │   ├── game/           # GameBoard, Pyre, etc.
 │   │   └── lobby/          # MainMenu, LocalSetup, OnlineLobby
