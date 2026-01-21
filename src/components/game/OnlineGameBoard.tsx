@@ -91,8 +91,16 @@ export function OnlineGameBoard({
         padding: '20px',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
       }}
     >
+      {/* Menu button */}
+      <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
+        <Button variant="secondary" size="small" onClick={onMainMenu}>
+          ← Menu
+        </Button>
+      </div>
+
       {/* Turn indicator */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
         <TurnIndicator
