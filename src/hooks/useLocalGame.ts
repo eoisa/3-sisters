@@ -34,6 +34,13 @@ export function useLocalGame() {
     [dispatch, localPlayerId]
   );
 
+  const playFaceUpCards = useCallback(
+    (cardIds: string[]) => {
+      dispatch({ type: 'PLAY_FACE_UP_CARDS', playerId: localPlayerId, cardIds });
+    },
+    [dispatch, localPlayerId]
+  );
+
   const pickupPyre = useCallback(() => {
     dispatch({ type: 'PICKUP_PYRE', playerId: localPlayerId });
   }, [dispatch, localPlayerId]);
@@ -97,6 +104,7 @@ export function useLocalGame() {
     pendingPlayerId,
     startGame,
     playCards,
+    playFaceUpCards,
     pickupPyre,
     flipFaceDown,
     resetGame,

@@ -10,8 +10,8 @@ function card(rank: Card['rank'], suit: Card['suit'] = 'hearts'): Card {
 // Helper to create a game state for AI testing
 function createGameState(overrides: Partial<GameState> = {}): GameState {
   const defaultPlayers: Player[] = [
-    { id: 'player-0', name: 'Human', hand: [card('5'), card('7')], faceDownCards: [card('A', 'spades')], isConnected: true },
-    { id: 'ai-1', name: 'Bot Alice', hand: [card('6'), card('8'), card('Q')], faceDownCards: [card('J', 'spades')], isConnected: true },
+    { id: 'player-0', name: 'Human', hand: [card('5'), card('7')], faceUpCards: [], faceDownCards: [card('A', 'spades')], isConnected: true },
+    { id: 'ai-1', name: 'Bot Alice', hand: [card('6'), card('8'), card('Q')], faceUpCards: [], faceDownCards: [card('J', 'spades')], isConnected: true },
   ];
 
   return {
@@ -49,8 +49,8 @@ describe('getAIDecision', () => {
     it('returns flipFaceDown when hand is empty but face-down cards remain', () => {
       const state = createGameState({
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [], faceDownCards: [card('7'), card('K')], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [], faceUpCards: [], faceDownCards: [card('7'), card('K')], isConnected: true },
         ],
       });
 
@@ -66,8 +66,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('A')], // Ace is high
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('4'), card('5'), card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('4'), card('5'), card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -80,8 +80,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('5')],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('7'), card('K')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('7'), card('K')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -98,8 +98,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('4'), card('7'), card('K')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('4'), card('7'), card('K')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -115,8 +115,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('5')],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('6'), card('K'), card('A')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('6'), card('K'), card('A')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -130,8 +130,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('4'), card('5'), card('6'), card('7'), card('9')],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('10'), card('K')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('10'), card('K')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -145,8 +145,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('5')],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('7'), card('10')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('7'), card('10')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -161,8 +161,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('A')],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('2'), card('8')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('2'), card('8')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -180,8 +180,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('5')],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('7', 'hearts'), card('7', 'spades'), card('K')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('7', 'hearts'), card('7', 'spades'), card('K')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -197,8 +197,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('4'), card('5'), card('6'), card('7')],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('10'), card('K')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('10'), card('K')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -212,8 +212,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('5')],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('2'), card('7')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('2'), card('7')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -230,8 +230,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('4')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('4')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -247,8 +247,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('2')],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('4')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('4')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -262,8 +262,8 @@ describe('getAIDecision', () => {
       const state = createGameState({
         pyre: [card('8')],
         players: [
-          { id: 'player-0', name: 'Human', hand: [card('5')], faceDownCards: [], isConnected: true },
-          { id: 'ai-1', name: 'Bot', hand: [card('4')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Human', hand: [card('5')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'ai-1', name: 'Bot', hand: [card('4')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 

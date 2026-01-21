@@ -21,14 +21,28 @@ export function canPlayerPlay(state: GameState, playerId: string): boolean {
 
   const topCard = getTopPyreCard(state);
 
-  // Check if any card in hand can be played
-  for (const card of player.hand) {
-    if (isValidPlay([card], topCard)) {
-      return true;
+  // Check hand first
+  if (player.hand.length > 0) {
+    for (const card of player.hand) {
+      if (isValidPlay([card], topCard)) {
+        return true;
+      }
     }
+    return false;
   }
 
-  return false;
+  // Then check face-up cards
+  if (player.faceUpCards.length > 0) {
+    for (const card of player.faceUpCards) {
+      if (isValidPlay([card], topCard)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Face-down cards always "can play" (blind flip)
+  return player.faceDownCards.length > 0;
 }
 
 export function getPlayableCards(state: GameState, playerId: string): Card[] {
@@ -58,9 +72,13 @@ export function getWinner(state: GameState): Player | null {
 }
 
 export function getTotalCardsForPlayer(player: Player): number {
-  return player.hand.length + player.faceDownCards.length;
+  return player.hand.length + player.faceUpCards.length + player.faceDownCards.length;
+}
+
+export function isPlayingFaceUp(player: Player): boolean {
+  return player.hand.length === 0 && player.faceUpCards.length > 0;
 }
 
 export function isPlayingFaceDown(player: Player): boolean {
-  return player.hand.length === 0 && player.faceDownCards.length > 0;
+  return player.hand.length === 0 && player.faceUpCards.length === 0 && player.faceDownCards.length > 0;
 }

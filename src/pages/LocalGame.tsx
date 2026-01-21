@@ -13,6 +13,7 @@ export function LocalGame({ onMainMenu }: LocalGameProps) {
     showPassScreen,
     pendingPlayerId,
     playCards,
+    playFaceUpCards,
     pickupPyre,
     flipFaceDown,
     resetGame,
@@ -43,6 +44,7 @@ export function LocalGame({ onMainMenu }: LocalGameProps) {
       state={state}
       localPlayerId={localPlayerId}
       onPlayCards={playCards}
+      onPlayFaceUpCards={playFaceUpCards}
       onPickupPyre={pickupPyre}
       onFlipFaceDown={flipFaceDown}
       onPlayAgain={handlePlayAgain}

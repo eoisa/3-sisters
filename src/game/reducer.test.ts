@@ -10,9 +10,9 @@ function card(rank: Card['rank'], suit: Card['suit'] = 'hearts'): Card {
 // Helper to create a basic playing game state
 function createPlayingState(overrides: Partial<GameState> = {}): GameState {
   const defaultPlayers: Player[] = [
-    { id: 'player-0', name: 'Player 1', hand: [card('5'), card('7'), card('K')], faceDownCards: [card('A', 'spades')], isConnected: true },
-    { id: 'player-1', name: 'Player 2', hand: [card('6'), card('8'), card('Q')], faceDownCards: [card('J', 'spades')], isConnected: true },
-    { id: 'player-2', name: 'Player 3', hand: [card('4'), card('9'), card('A')], faceDownCards: [card('K', 'spades')], isConnected: true },
+    { id: 'player-0', name: 'Player 1', hand: [card('5'), card('7'), card('K')], faceUpCards: [], faceDownCards: [card('A', 'spades')], isConnected: true },
+    { id: 'player-1', name: 'Player 2', hand: [card('6'), card('8'), card('Q')], faceUpCards: [], faceDownCards: [card('J', 'spades')], isConnected: true },
+    { id: 'player-2', name: 'Player 3', hand: [card('4'), card('9'), card('A')], faceUpCards: [], faceDownCards: [card('K', 'spades')], isConnected: true },
   ];
 
   return {
@@ -79,15 +79,26 @@ describe('gameReducer', () => {
       }
     });
 
+    it('deals 3 face-up cards to each player', () => {
+      const state = gameReducer(initialGameState, {
+        type: 'START_GAME',
+        playerNames: ['Alice', 'Bob', 'Charlie'],
+      });
+
+      for (const player of state.players) {
+        expect(player.faceUpCards).toHaveLength(3);
+      }
+    });
+
     it('deals remaining cards to hands', () => {
       const state = gameReducer(initialGameState, {
         type: 'START_GAME',
         playerNames: ['Alice', 'Bob', 'Charlie'],
       });
 
-      // 52 cards - (3 players * 3 face-down) = 43 cards for hands
+      // 52 cards - (3 players * 3 face-down) - (3 players * 3 face-up) = 34 cards for hands
       const totalHandCards = state.players.reduce((sum, p) => sum + p.hand.length, 0);
-      expect(totalHandCards).toBe(43);
+      expect(totalHandCards).toBe(34);
     });
 
     it('distributes hand cards roughly equally', () => {
@@ -96,10 +107,10 @@ describe('gameReducer', () => {
         playerNames: ['Alice', 'Bob', 'Charlie'],
       });
 
-      // With 43 cards and 3 players: one player gets 15, two get 14
+      // With 34 cards and 3 players: roughly 11-12 each
       const handSizes = state.players.map((p) => p.hand.length).sort((a, b) => a - b);
-      expect(handSizes[0]).toBeGreaterThanOrEqual(14);
-      expect(handSizes[2]).toBeLessThanOrEqual(15);
+      expect(handSizes[0]).toBeGreaterThanOrEqual(11);
+      expect(handSizes[2]).toBeLessThanOrEqual(12);
     });
 
     it('sets phase to discardingThrees', () => {
@@ -138,8 +149,8 @@ describe('gameReducer', () => {
       stateWithThrees = {
         phase: 'discardingThrees',
         players: [
-          { id: 'player-0', name: 'Alice', hand: [card('3', 'hearts'), card('3', 'spades'), card('7')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'Bob', hand: [card('5'), card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'Alice', hand: [card('3', 'hearts'), card('3', 'spades'), card('7')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'Bob', hand: [card('5'), card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
         currentPlayerIndex: 0,
         direction: 1,
@@ -229,7 +240,7 @@ describe('gameReducer', () => {
   describe('FINISH_DISCARDING_THREES', () => {
     it('sets phase to playing', () => {
       const state = gameReducer(
-        { ...initialGameState, phase: 'discardingThrees', players: [{ id: 'p1', name: 'A', hand: [], faceDownCards: [], isConnected: true }] },
+        { ...initialGameState, phase: 'discardingThrees', players: [{ id: 'p1', name: 'A', hand: [], faceUpCards: [], faceDownCards: [], isConnected: true }] },
         { type: 'FINISH_DISCARDING_THREES' }
       );
 
@@ -241,9 +252,9 @@ describe('gameReducer', () => {
         ...initialGameState,
         phase: 'discardingThrees',
         players: [
-          { id: 'player-0', name: 'A', hand: [], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'B', hand: [], faceDownCards: [], isConnected: true },
-          { id: 'player-2', name: 'C', hand: [], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'A', hand: [], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'B', hand: [], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-2', name: 'C', hand: [], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
         firstThreeDiscarderId: 'player-1',
       };
@@ -259,9 +270,9 @@ describe('gameReducer', () => {
         ...initialGameState,
         phase: 'discardingThrees',
         players: [
-          { id: 'player-0', name: 'A', hand: [], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'B', hand: [], faceDownCards: [], isConnected: true },
-          { id: 'player-2', name: 'C', hand: [], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'A', hand: [], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'B', hand: [], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-2', name: 'C', hand: [], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
         firstThreeDiscarderId: 'player-2',
       };
@@ -357,8 +368,8 @@ describe('gameReducer', () => {
     it('allows multiple cards of the same rank', () => {
       const stateWithPairs = createPlayingState({
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('7', 'hearts'), card('7', 'spades'), card('K')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('7', 'hearts'), card('7', 'spades'), card('K')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -392,8 +403,8 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         pyre: [card('5'), card('7'), card('K')],
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('10')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('10')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -410,8 +421,8 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         pyre: [card('5'), card('7')],
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('10')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('10')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -428,8 +439,8 @@ describe('gameReducer', () => {
     it('records burn action type', () => {
       const state = createPlayingState({
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('10')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('10')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -446,9 +457,9 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         currentPlayerIndex: 0,
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('10'), card('A')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
-          { id: 'player-2', name: 'P3', hand: [card('7')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('10'), card('A')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-2', name: 'P3', hand: [card('7')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -467,9 +478,9 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         direction: 1,
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('8')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
-          { id: 'player-2', name: 'P3', hand: [card('7')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('8')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-2', name: 'P3', hand: [card('7')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -487,9 +498,9 @@ describe('gameReducer', () => {
         direction: -1,
         currentPlayerIndex: 1,
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('6')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('8')], faceDownCards: [], isConnected: true },
-          { id: 'player-2', name: 'P3', hand: [card('7')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('8')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-2', name: 'P3', hand: [card('7')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -507,9 +518,9 @@ describe('gameReducer', () => {
         direction: 1,
         currentPlayerIndex: 1,
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('6')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('8'), card('K')], faceDownCards: [], isConnected: true },
-          { id: 'player-2', name: 'P3', hand: [card('7')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('8'), card('K')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-2', name: 'P3', hand: [card('7')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -526,8 +537,8 @@ describe('gameReducer', () => {
     it('records reverse action type', () => {
       const state = createPlayingState({
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('8')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('8')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -544,8 +555,8 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         pyre: [card('A')], // Ace is high
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('8')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('8')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -562,11 +573,11 @@ describe('gameReducer', () => {
   });
 
   describe('PLAY_CARDS - winning', () => {
-    it('declares winner when player empties hand and has no face-down cards', () => {
+    it('declares winner when player empties hand and has no face-up or face-down cards', () => {
       const state = createPlayingState({
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('7')], faceDownCards: [], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('7')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -580,11 +591,29 @@ describe('gameReducer', () => {
       expect(newState.winner).toBe('player-0');
     });
 
+    it('does not win if player still has face-up cards', () => {
+      const state = createPlayingState({
+        players: [
+          { id: 'player-0', name: 'P1', hand: [card('7')], faceUpCards: [card('K')], faceDownCards: [], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
+        ],
+      });
+
+      const newState = gameReducer(state, {
+        type: 'PLAY_CARDS',
+        playerId: 'player-0',
+        cardIds: ['hearts-7'],
+      });
+
+      expect(newState.phase).toBe('playing');
+      expect(newState.winner).toBeNull();
+    });
+
     it('does not win if player still has face-down cards', () => {
       const state = createPlayingState({
         players: [
-          { id: 'player-0', name: 'P1', hand: [card('7')], faceDownCards: [card('A')], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [card('7')], faceUpCards: [], faceDownCards: [card('A')], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -713,8 +742,8 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         pyre: [card('5')],
         players: [
-          { id: 'player-0', name: 'P1', hand: [], faceDownCards: [card('7'), card('K')], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [], faceUpCards: [], faceDownCards: [card('7'), card('K')], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -734,8 +763,8 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         pyre: [card('K')],
         players: [
-          { id: 'player-0', name: 'P1', hand: [], faceDownCards: [card('5'), card('7')], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [], faceUpCards: [], faceDownCards: [card('5'), card('7')], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -755,8 +784,8 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         pyre: [],
         players: [
-          { id: 'player-0', name: 'P1', hand: [], faceDownCards: [card('7'), card('K')], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [], faceUpCards: [], faceDownCards: [card('7'), card('K')], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -772,8 +801,8 @@ describe('gameReducer', () => {
     it('does nothing for invalid card index', () => {
       const state = createPlayingState({
         players: [
-          { id: 'player-0', name: 'P1', hand: [], faceDownCards: [card('7')], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [], faceUpCards: [], faceDownCards: [card('7')], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -790,8 +819,8 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         pyre: [],
         players: [
-          { id: 'player-0', name: 'P1', hand: [], faceDownCards: [card('7')], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [], faceUpCards: [], faceDownCards: [card('7')], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -809,8 +838,8 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         pyre: [card('A')],
         players: [
-          { id: 'player-0', name: 'P1', hand: [], faceDownCards: [card('5')], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [], faceUpCards: [], faceDownCards: [card('5')], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -828,8 +857,8 @@ describe('gameReducer', () => {
       const state = createPlayingState({
         pyre: [card('K')],
         players: [
-          { id: 'player-0', name: 'P1', hand: [], faceDownCards: [card('10')], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [], faceUpCards: [], faceDownCards: [card('10')], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 
@@ -848,9 +877,9 @@ describe('gameReducer', () => {
         pyre: [card('K')],
         direction: 1,
         players: [
-          { id: 'player-0', name: 'P1', hand: [], faceDownCards: [card('8')], isConnected: true },
-          { id: 'player-1', name: 'P2', hand: [card('6')], faceDownCards: [], isConnected: true },
-          { id: 'player-2', name: 'P3', hand: [card('7')], faceDownCards: [], isConnected: true },
+          { id: 'player-0', name: 'P1', hand: [], faceUpCards: [], faceDownCards: [card('8')], isConnected: true },
+          { id: 'player-1', name: 'P2', hand: [card('6')], faceUpCards: [], faceDownCards: [], isConnected: true },
+          { id: 'player-2', name: 'P3', hand: [card('7')], faceUpCards: [], faceDownCards: [], isConnected: true },
         ],
       });
 

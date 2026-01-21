@@ -38,6 +38,7 @@ export function OnlineGameBoard({
     id: p.id,
     name: p.name,
     hand: [] as Card[],
+    faceUpCards: [] as Card[],
     faceDownCards: [] as Card[],
     isConnected: p.isConnected,
   }));
@@ -104,7 +105,7 @@ export function OnlineGameBoard({
       {/* Turn indicator */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
         <TurnIndicator
-          currentPlayer={currentPlayer ? { ...currentPlayer, hand: [], faceDownCards: [], isConnected: true } : null}
+          currentPlayer={currentPlayer ? { ...currentPlayer, hand: [], faceUpCards: [], faceDownCards: [], isConnected: true } : null}
           phase={gameState.phase}
         />
       </div>

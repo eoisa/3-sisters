@@ -1,5 +1,5 @@
 import type { GameState, GameAction, Player, Card, TurnAction, PlayDirection } from '../types';
-import { FACE_DOWN_CARDS_COUNT, DISCARD_RANK } from '../constants';
+import { FACE_DOWN_CARDS_COUNT, FACE_UP_CARDS_COUNT, DISCARD_RANK } from '../constants';
 import { createDeck, shuffleDeck, removeCardsById, getCardById } from '../utils/deck';
 import { isValidPlay, isBurnCard, isReverseCard } from '../utils/cardComparison';
 
@@ -33,6 +33,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'PLAY_CARDS':
       return playCards(state, action.playerId, action.cardIds);
 
+    case 'PLAY_FACE_UP_CARDS':
+      return playFaceUpCards(state, action.playerId, action.cardIds);
+
     case 'PICKUP_PYRE':
       return pickupPyre(state, action.playerId);
 
@@ -53,6 +56,7 @@ function startGame(state: GameState, playerNames: string[]): GameState {
     id: `player-${index}`,
     name,
     hand: [],
+    faceUpCards: [],
     faceDownCards: [],
     isConnected: true,
   }));
@@ -62,6 +66,12 @@ function startGame(state: GameState, playerNames: string[]): GameState {
   for (const player of players) {
     player.faceDownCards = deck.slice(deckIndex, deckIndex + FACE_DOWN_CARDS_COUNT);
     deckIndex += FACE_DOWN_CARDS_COUNT;
+  }
+
+  // Deal 3 face-up cards to each player
+  for (const player of players) {
+    player.faceUpCards = deck.slice(deckIndex, deckIndex + FACE_UP_CARDS_COUNT);
+    deckIndex += FACE_UP_CARDS_COUNT;
   }
 
   // Deal remaining cards to hands one at a time
@@ -197,7 +207,11 @@ function playCards(state: GameState, playerId: string, cardIds: string[]): GameS
 
   // Check for winner
   const updatedPlayer = newPlayers[playerIndex];
-  if (updatedPlayer.hand.length === 0 && updatedPlayer.faceDownCards.length === 0) {
+  if (
+    updatedPlayer.hand.length === 0 &&
+    updatedPlayer.faceUpCards.length === 0 &&
+    updatedPlayer.faceDownCards.length === 0
+  ) {
     return {
       ...state,
       phase: 'finished',
@@ -211,6 +225,102 @@ function playCards(state: GameState, playerId: string, cardIds: string[]): GameS
   }
 
   // Move to next player (burn ends turn, reverse uses new direction)
+  const nextPlayerIndex = getNextPlayerIndex(
+    state.currentPlayerIndex,
+    state.players.length,
+    newDirection
+  );
+
+  return {
+    ...state,
+    players: newPlayers,
+    pyre: newPyre,
+    discardPile: newDiscardPile,
+    direction: newDirection,
+    currentPlayerIndex: nextPlayerIndex,
+    turnHistory: [...state.turnHistory, turnAction],
+  };
+}
+
+function playFaceUpCards(state: GameState, playerId: string, cardIds: string[]): GameState {
+  if (state.phase !== 'playing') return state;
+
+  const playerIndex = state.players.findIndex((p) => p.id === playerId);
+  if (playerIndex === -1 || playerIndex !== state.currentPlayerIndex) return state;
+
+  const player = state.players[playerIndex];
+
+  // Can only play face-up cards when hand is empty
+  if (player.hand.length > 0) return state;
+
+  // Must have face-up cards to play
+  if (player.faceUpCards.length === 0) return state;
+
+  const cardsToPlay = cardIds
+    .map((id) => getCardById(player.faceUpCards, id))
+    .filter((c): c is Card => c !== undefined);
+
+  if (cardsToPlay.length !== cardIds.length) return state;
+
+  const topCard = state.pyre.length > 0 ? state.pyre[state.pyre.length - 1] : null;
+
+  if (!isValidPlay(cardsToPlay, topCard)) return state;
+
+  // Remove cards from face-up cards
+  const newFaceUpCards = removeCardsById(player.faceUpCards, cardIds);
+  const newPlayers = [...state.players];
+  newPlayers[playerIndex] = { ...player, faceUpCards: newFaceUpCards };
+
+  // Handle burn/reverse/normal play
+  const shouldBurn = cardsToPlay.some(isBurnCard);
+  const shouldReverse = cardsToPlay.some(isReverseCard);
+
+  let newPyre: Card[];
+  let newDiscardPile: Card[];
+  let actionType: TurnAction['type'];
+  let newDirection: PlayDirection = state.direction;
+
+  if (shouldBurn) {
+    newPyre = [];
+    newDiscardPile = [...state.discardPile, ...state.pyre, ...cardsToPlay];
+    actionType = 'burn';
+  } else if (shouldReverse) {
+    newPyre = [...state.pyre, ...cardsToPlay];
+    newDiscardPile = state.discardPile;
+    actionType = 'reverse';
+    newDirection = (state.direction * -1) as PlayDirection;
+  } else {
+    newPyre = [...state.pyre, ...cardsToPlay];
+    newDiscardPile = state.discardPile;
+    actionType = 'play';
+  }
+
+  const turnAction: TurnAction = {
+    playerId,
+    type: actionType,
+    cards: cardsToPlay,
+    timestamp: Date.now(),
+  };
+
+  // Check for winner - must have empty hand, faceUpCards, AND faceDownCards
+  const updatedPlayer = newPlayers[playerIndex];
+  if (
+    updatedPlayer.hand.length === 0 &&
+    updatedPlayer.faceUpCards.length === 0 &&
+    updatedPlayer.faceDownCards.length === 0
+  ) {
+    return {
+      ...state,
+      phase: 'finished',
+      players: newPlayers,
+      pyre: newPyre,
+      discardPile: newDiscardPile,
+      direction: newDirection,
+      turnHistory: [...state.turnHistory, turnAction],
+      winner: playerId,
+    };
+  }
+
   const nextPlayerIndex = getNextPlayerIndex(
     state.currentPlayerIndex,
     state.players.length,
@@ -272,8 +382,9 @@ function flipFaceDown(state: GameState, playerId: string, cardIndex: number): Ga
 
   const player = state.players[playerIndex];
 
-  // Can only flip face-down cards when hand is empty
+  // Can only flip face-down cards when hand AND face-up cards are empty
   if (player.hand.length > 0) return state;
+  if (player.faceUpCards.length > 0) return state;
   if (cardIndex < 0 || cardIndex >= player.faceDownCards.length) return state;
 
   const card = player.faceDownCards[cardIndex];
@@ -346,6 +457,7 @@ function flipFaceDown(state: GameState, playerId: string, cardIndex: number): Ga
   const updatedPlayer = newPlayers[playerIndex];
   if (
     updatedPlayer.hand.length === 0 &&
+    updatedPlayer.faceUpCards.length === 0 &&
     updatedPlayer.faceDownCards.length === 0 &&
     canPlay
   ) {

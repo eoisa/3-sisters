@@ -203,3 +203,24 @@
 .face-down-cards .card--selectable:hover .card__inner {
   transform: rotateY(180deg) translateY(-8px) scale(1.05);
 }
+
+/* Face up cards display (table cards) */
+.face-up-cards {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.face-up-cards .card {
+  cursor: pointer;
+}
+
+.face-up-cards .card--selectable:hover .card__inner {
+  transform: translateY(-8px) scale(1.05);
+}
+
+.face-up-cards .card--selected .card__inner {
+  transform: translateY(-12px);
+  box-shadow: var(--shadow-card-selected);
+}

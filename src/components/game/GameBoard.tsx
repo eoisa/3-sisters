@@ -11,6 +11,7 @@ interface GameBoardProps {
   state: GameState;
   localPlayerId: string;
   onPlayCards: (cardIds: string[]) => void;
+  onPlayFaceUpCards: (cardIds: string[]) => void;
   onPickupPyre: () => void;
   onFlipFaceDown: (index: number) => void;
   onPlayAgain: () => void;
@@ -21,6 +22,7 @@ export function GameBoard({
   state,
   localPlayerId,
   onPlayCards,
+  onPlayFaceUpCards,
   onPickupPyre,
   onFlipFaceDown,
   onPlayAgain,
@@ -100,6 +102,7 @@ export function GameBoard({
             isCurrentPlayer={currentPlayer?.id === localPlayerId}
             topPyreCard={topPyreCard}
             onPlayCards={onPlayCards}
+            onPlayFaceUpCards={onPlayFaceUpCards}
             onPickupPyre={onPickupPyre}
             onFlipFaceDown={onFlipFaceDown}
             pyreEmpty={state.pyre.length === 0}

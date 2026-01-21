@@ -21,6 +21,7 @@ export function SinglePlayerGame({
     humanPlayerId,
     startGame,
     playCards,
+    playFaceUpCards,
     pickupPyre,
     flipFaceDown,
     resetGame,
@@ -41,6 +42,7 @@ export function SinglePlayerGame({
       state={state}
       localPlayerId={humanPlayerId}
       onPlayCards={playCards}
+      onPlayFaceUpCards={playFaceUpCards}
       onPickupPyre={pickupPyre}
       onFlipFaceDown={flipFaceDown}
       onPlayAgain={handlePlayAgain}

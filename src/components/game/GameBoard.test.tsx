@@ -14,8 +14,8 @@ function createGameState(overrides: Partial<GameState> = {}): GameState {
   return {
     phase: 'playing',
     players: [
-      { id: 'player-0', name: 'Player 1', hand: [card('5'), card('7')], faceDownCards: [card('A')], isConnected: true },
-      { id: 'player-1', name: 'Player 2', hand: [card('6'), card('8')], faceDownCards: [card('K')], isConnected: true },
+      { id: 'player-0', name: 'Player 1', hand: [card('5'), card('7')], faceUpCards: [], faceDownCards: [card('A')], isConnected: true },
+      { id: 'player-1', name: 'Player 2', hand: [card('6'), card('8')], faceUpCards: [], faceDownCards: [card('K')], isConnected: true },
     ],
     currentPlayerIndex: 0,
     direction: 1,
@@ -33,6 +33,7 @@ describe('GameBoard', () => {
     state: createGameState(),
     localPlayerId: 'player-0',
     onPlayCards: vi.fn(),
+    onPlayFaceUpCards: vi.fn(),
     onPickupPyre: vi.fn(),
     onFlipFaceDown: vi.fn(),
     onPlayAgain: vi.fn(),

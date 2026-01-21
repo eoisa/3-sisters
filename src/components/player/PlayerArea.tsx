@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { Player, Card } from '../../types';
-import { CardHand, FaceDownCards } from '../card';
+import { CardHand, FaceDownCards, FaceUpCards } from '../card';
 import { Button } from '../ui';
-import { isPlayingFaceDown } from '../../game';
+import { isPlayingFaceDown, isPlayingFaceUp } from '../../game';
 import { isValidPlay, getCardById } from '../../utils';
 
 interface PlayerAreaProps {
@@ -10,6 +10,7 @@ interface PlayerAreaProps {
   isCurrentPlayer: boolean;
   topPyreCard: Card | null;
   onPlayCards: (cardIds: string[]) => void;
+  onPlayFaceUpCards: (cardIds: string[]) => void;
   onPickupPyre: () => void;
   onFlipFaceDown: (index: number) => void;
   pyreEmpty: boolean;
@@ -20,12 +21,15 @@ export function PlayerArea({
   isCurrentPlayer,
   topPyreCard,
   onPlayCards,
+  onPlayFaceUpCards,
   onPickupPyre,
   onFlipFaceDown,
   pyreEmpty,
 }: PlayerAreaProps) {
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
+  const [selectedFaceUpCardIds, setSelectedFaceUpCardIds] = useState<string[]>([]);
   const playingFaceDown = isPlayingFaceDown(player);
+  const playingFaceUp = isPlayingFaceUp(player);
 
   const handleCardClick = (cardId: string) => {
     if (!isCurrentPlayer) return;
@@ -49,6 +53,27 @@ export function PlayerArea({
     });
   };
 
+  const handleFaceUpCardClick = (cardId: string) => {
+    if (!isCurrentPlayer || !playingFaceUp) return;
+
+    setSelectedFaceUpCardIds((prev) => {
+      if (prev.includes(cardId)) {
+        return prev.filter((id) => id !== cardId);
+      }
+
+      // Check if the new card has the same rank as selected cards
+      if (prev.length > 0) {
+        const firstCard = getCardById(player.faceUpCards, prev[0]);
+        const newCard = getCardById(player.faceUpCards, cardId);
+        if (firstCard && newCard && firstCard.rank !== newCard.rank) {
+          return [cardId];
+        }
+      }
+
+      return [...prev, cardId];
+    });
+  };
+
   const handlePlayCards = () => {
     if (selectedCardIds.length === 0) return;
 
@@ -62,10 +87,31 @@ export function PlayerArea({
     }
   };
 
+  const handlePlayFaceUpCards = () => {
+    if (selectedFaceUpCardIds.length === 0) return;
+
+    const cards = selectedFaceUpCardIds
+      .map((id) => getCardById(player.faceUpCards, id))
+      .filter((c): c is Card => c !== undefined);
+
+    if (isValidPlay(cards, topPyreCard)) {
+      onPlayFaceUpCards(selectedFaceUpCardIds);
+      setSelectedFaceUpCardIds([]);
+    }
+  };
+
   const canPlay = () => {
     if (selectedCardIds.length === 0) return false;
     const cards = selectedCardIds
       .map((id) => getCardById(player.hand, id))
+      .filter((c): c is Card => c !== undefined);
+    return isValidPlay(cards, topPyreCard);
+  };
+
+  const canPlayFaceUp = () => {
+    if (selectedFaceUpCardIds.length === 0) return false;
+    const cards = selectedFaceUpCardIds
+      .map((id) => getCardById(player.faceUpCards, id))
       .filter((c): c is Card => c !== undefined);
     return isValidPlay(cards, topPyreCard);
   };
@@ -110,6 +156,37 @@ export function PlayerArea({
         </div>
       )}
 
+      {/* Face-up cards (table cards) */}
+      {player.faceUpCards.length > 0 && (
+        <div
+          style={{
+            marginBottom: '16px',
+            padding: '12px',
+            background: 'rgba(255, 193, 7, 0.1)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255, 193, 7, 0.3)',
+          }}
+        >
+          <div
+            style={{
+              color: 'rgba(255, 193, 7, 0.9)',
+              fontSize: '12px',
+              marginBottom: '8px',
+              textAlign: 'center',
+              fontWeight: 600,
+            }}
+          >
+            Table Cards
+          </div>
+          <FaceUpCards
+            cards={player.faceUpCards}
+            selectedCardIds={selectedFaceUpCardIds}
+            selectable={isCurrentPlayer && playingFaceUp}
+            onCardClick={handleFaceUpCardClick}
+          />
+        </div>
+      )}
+
       {/* Hand */}
       {player.hand.length > 0 && (
         <CardHand
@@ -120,8 +197,8 @@ export function PlayerArea({
         />
       )}
 
-      {/* Action buttons */}
-      {isCurrentPlayer && !playingFaceDown && (
+      {/* Action buttons for hand play */}
+      {isCurrentPlayer && player.hand.length > 0 && (
         <div
           style={{
             display: 'flex',
@@ -136,6 +213,33 @@ export function PlayerArea({
             disabled={!canPlay()}
           >
             Play Cards
+          </Button>
+          <Button
+            variant="danger"
+            onClick={onPickupPyre}
+            disabled={pyreEmpty}
+          >
+            Pick Up Pyre
+          </Button>
+        </div>
+      )}
+
+      {/* Action buttons for face-up card play */}
+      {isCurrentPlayer && playingFaceUp && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '12px',
+            marginTop: '16px',
+          }}
+        >
+          <Button
+            variant="success"
+            onClick={handlePlayFaceUpCards}
+            disabled={!canPlayFaceUp()}
+          >
+            Play Table Cards
           </Button>
           <Button
             variant="danger"

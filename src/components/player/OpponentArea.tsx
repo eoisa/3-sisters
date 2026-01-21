@@ -1,4 +1,5 @@
 import type { Player } from '../../types';
+import { SUIT_SYMBOLS } from '../../constants';
 
 interface OpponentAreaProps {
   player: Player;
@@ -52,6 +53,53 @@ export function OpponentArea({ player, isCurrentPlayer }: OpponentAreaProps) {
           </div>
           <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', marginTop: '4px' }}>
             {player.hand.length} cards
+          </div>
+        </div>
+      )}
+
+      {/* Face-up cards (visible to all) */}
+      {player.faceUpCards.length > 0 && (
+        <div
+          style={{
+            marginTop: '8px',
+            padding: '8px',
+            background: 'rgba(255, 193, 7, 0.1)',
+            borderRadius: '6px',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '4px',
+              flexWrap: 'wrap',
+            }}
+          >
+            {player.faceUpCards.map((card) => (
+              <div
+                key={card.id}
+                style={{
+                  width: '28px',
+                  height: '38px',
+                  background: 'white',
+                  borderRadius: '3px',
+                  border: '1px solid #ccc',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: card.suit === 'hearts' || card.suit === 'diamonds' ? '#e53935' : '#212121',
+                }}
+              >
+                <span>{card.rank}</span>
+                <span style={{ fontSize: '8px' }}>{SUIT_SYMBOLS[card.suit]}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ color: 'rgba(255, 193, 7, 0.7)', fontSize: '10px', marginTop: '4px' }}>
+            table cards
           </div>
         </div>
       )}

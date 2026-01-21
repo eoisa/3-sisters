@@ -4,7 +4,7 @@ import { isValidPlay, sortCardsByRank, isBurnCard, isWildCard } from '../utils';
 export type AIDifficulty = 'easy' | 'medium' | 'hard';
 
 interface AIDecision {
-  action: 'play' | 'pickup' | 'flipFaceDown';
+  action: 'play' | 'playFaceUp' | 'pickup' | 'flipFaceDown';
   cardIds?: string[];
   faceDownIndex?: number;
 }
@@ -24,14 +24,35 @@ export function getAIDecision(
 
   const pyreTopCard = state.pyre.length > 0 ? state.pyre[state.pyre.length - 1] : null;
 
-  // If hand is empty, must flip a face-down card
-  if (player.hand.length === 0 && player.faceDownCards.length > 0) {
+  // If hand is empty but has face-up cards, play from face-up
+  if (player.hand.length === 0 && player.faceUpCards.length > 0) {
+    const playableFaceUpCards = findPlayableCards(player.faceUpCards, pyreTopCard);
+
+    if (playableFaceUpCards.length === 0) {
+      return { action: 'pickup' };
+    }
+
+    // Use same strategy as hand cards
+    const cardsToPlay = chooseCardsToPlay(playableFaceUpCards, state.pyre, difficulty);
+
+    if (cardsToPlay.length === 0) {
+      return { action: 'pickup' };
+    }
+
+    return {
+      action: 'playFaceUp',
+      cardIds: cardsToPlay.map((c) => c.id),
+    };
+  }
+
+  // If hand AND face-up cards are empty, must flip a face-down card
+  if (player.hand.length === 0 && player.faceUpCards.length === 0 && player.faceDownCards.length > 0) {
     // Pick a random face-down card (we can't see them anyway)
     const index = Math.floor(Math.random() * player.faceDownCards.length);
     return { action: 'flipFaceDown', faceDownIndex: index };
   }
 
-  // Find all playable cards
+  // Find all playable cards from hand
   const playableCards = findPlayableCards(player.hand, pyreTopCard);
 
   if (playableCards.length === 0) {

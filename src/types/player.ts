@@ -4,6 +4,7 @@ export interface Player {
   id: string;
   name: string;
   hand: Card[];
+  faceUpCards: Card[];
   faceDownCards: Card[];
   isConnected: boolean;
 }

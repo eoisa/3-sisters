@@ -10,8 +10,8 @@ function card(rank: Card['rank'], suit: Card['suit'] = 'hearts'): Card {
 
 // Test players
 const players: Player[] = [
-  { id: 'player-1', name: 'Alice', hand: [], faceDownCards: [], isConnected: true },
-  { id: 'player-2', name: 'Bob', hand: [], faceDownCards: [], isConnected: true },
+  { id: 'player-1', name: 'Alice', hand: [], faceUpCards: [], faceDownCards: [], isConnected: true },
+  { id: 'player-2', name: 'Bob', hand: [], faceUpCards: [], faceDownCards: [], isConnected: true },
 ];
 
 describe('GameLog', () => {

@@ -36,6 +36,7 @@ export type GameAction =
   | { type: 'DISCARD_THREES'; playerId: string }
   | { type: 'FINISH_DISCARDING_THREES' }
   | { type: 'PLAY_CARDS'; playerId: string; cardIds: string[] }
+  | { type: 'PLAY_FACE_UP_CARDS'; playerId: string; cardIds: string[] }
   | { type: 'PICKUP_PYRE'; playerId: string }
   | { type: 'FLIP_FACE_DOWN'; playerId: string; cardIndex: number }
   | { type: 'RESET_GAME' };

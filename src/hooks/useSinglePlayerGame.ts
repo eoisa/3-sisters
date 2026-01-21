@@ -37,6 +37,10 @@ export function useSinglePlayerGame({ playerName, aiCount, difficulty }: UseSing
     dispatch({ type: 'PLAY_CARDS', playerId: humanPlayerId, cardIds });
   }, []);
 
+  const playFaceUpCards = useCallback((cardIds: string[]) => {
+    dispatch({ type: 'PLAY_FACE_UP_CARDS', playerId: humanPlayerId, cardIds });
+  }, []);
+
   const pickupPyre = useCallback(() => {
     dispatch({ type: 'PICKUP_PYRE', playerId: humanPlayerId });
   }, []);
@@ -69,6 +73,8 @@ export function useSinglePlayerGame({ playerName, aiCount, difficulty }: UseSing
 
       if (decision.action === 'play' && decision.cardIds) {
         dispatch({ type: 'PLAY_CARDS', playerId: currentPlayer.id, cardIds: decision.cardIds });
+      } else if (decision.action === 'playFaceUp' && decision.cardIds) {
+        dispatch({ type: 'PLAY_FACE_UP_CARDS', playerId: currentPlayer.id, cardIds: decision.cardIds });
       } else if (decision.action === 'pickup') {
         dispatch({ type: 'PICKUP_PYRE', playerId: currentPlayer.id });
       } else if (decision.action === 'flipFaceDown' && decision.faceDownIndex !== undefined) {
@@ -136,6 +142,7 @@ export function useSinglePlayerGame({ playerName, aiCount, difficulty }: UseSing
     isHumanTurn,
     startGame,
     playCards,
+    playFaceUpCards,
     pickupPyre,
     flipFaceDown,
     resetGame,
