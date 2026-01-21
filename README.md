@@ -10,7 +10,8 @@ Just a vibe-coded starter project to emulate the card game "3 sisters"
 
 ### Equipment
 
-Standard 52-card deck with jokers removed, well shuffled.
+- **3-4 players**: One standard 52-card deck with jokers removed, well shuffled.
+- **5-8 players**: Two standard 52-card decks combined and well shuffled.
 
 ### Special Cards
 

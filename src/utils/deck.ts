@@ -1,16 +1,18 @@
 import type { Card, Suit, Rank } from '../types';
 import { SUITS, RANKS } from '../constants';
 
-export function createDeck(): Card[] {
+export function createDeck(deckCount: number = 1): Card[] {
   const deck: Card[] = [];
 
-  for (const suit of SUITS) {
-    for (const rank of RANKS) {
-      deck.push({
-        id: `${suit}-${rank}`,
-        suit,
-        rank,
-      });
+  for (let d = 0; d < deckCount; d++) {
+    for (const suit of SUITS) {
+      for (const rank of RANKS) {
+        deck.push({
+          id: deckCount > 1 ? `${suit}-${rank}-${d}` : `${suit}-${rank}`,
+          suit,
+          rank,
+        });
+      }
     }
   }
 

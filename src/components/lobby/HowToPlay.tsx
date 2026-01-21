@@ -40,7 +40,7 @@ export function HowToPlay({ onBack }: HowToPlayProps) {
           <h2 style={{ fontSize: '20px', marginBottom: '12px' }}>Overview</h2>
           <p style={{ opacity: 0.9, lineHeight: 1.6 }}>
             3 Sisters is a card game for 3-8 players. The goal is to be the first player
-            to get rid of all your cards.
+            to get rid of all your cards. Games with 5+ players use two decks.
           </p>
         </section>
 

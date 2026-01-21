@@ -16,11 +16,17 @@ function getNextPlayerIndex(currentIndex: number, playerCount: number, direction
   return (currentIndex + direction + playerCount) % playerCount;
 }
 
-export function createDeck(): Card[] {
+export function createDeck(deckCount: number = 1): Card[] {
   const deck: Card[] = [];
-  for (const suit of SUITS) {
-    for (const rank of RANKS) {
-      deck.push({ id: `${suit}-${rank}`, suit, rank });
+  for (let d = 0; d < deckCount; d++) {
+    for (const suit of SUITS) {
+      for (const rank of RANKS) {
+        deck.push({
+          id: deckCount > 1 ? `${suit}-${rank}-${d}` : `${suit}-${rank}`,
+          suit,
+          rank,
+        });
+      }
     }
   }
   return deck;
@@ -60,7 +66,9 @@ export function isReverseCard(card: Card): boolean {
 }
 
 export function createInitialGameState(playerInfos: { id: string; name: string }[]): GameState {
-  const deck = shuffleDeck(createDeck());
+  // Use two decks for 5+ players
+  const deckCount = playerInfos.length >= 5 ? 2 : 1;
+  const deck = shuffleDeck(createDeck(deckCount));
   const players: Player[] = playerInfos.map(({ id, name }) => ({
     id,
     name,

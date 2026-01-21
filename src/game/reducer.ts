@@ -51,7 +51,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 }
 
 function startGame(state: GameState, playerNames: string[]): GameState {
-  const deck = shuffleDeck(createDeck());
+  // Use two decks for 5+ players
+  const deckCount = playerNames.length >= 5 ? 2 : 1;
+  const deck = shuffleDeck(createDeck(deckCount));
   const players: Player[] = playerNames.map((name, index) => ({
     id: `player-${index}`,
     name,
