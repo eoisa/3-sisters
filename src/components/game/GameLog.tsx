@@ -29,6 +29,8 @@ export function GameLog({ history, players, maxEntries = 10 }: GameLogProps) {
         return `${playerName} burned the pyre with ${cardStr}`;
       case 'flipFaceDown':
         return `${playerName} flipped ${cardStr}`;
+      case 'reverse':
+        return `${playerName} reversed the flow with ${cardStr}`;
       default:
         return `${playerName} did something`;
     }
