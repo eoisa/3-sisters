@@ -6,6 +6,7 @@ import {
   discardThrees,
   finishDiscardingThrees,
   playCards,
+  playFaceUpCards,
   pickupPyre,
   flipFaceDown,
   hasThreesInHand,
@@ -54,7 +55,7 @@ export class Room {
     // Notify existing players
     this.broadcast({
       type: 'PLAYER_JOINED',
-      player: { id: playerId, name: playerName, handCount: 0, faceDownCount: 0, isConnected: true },
+      player: { id: playerId, name: playerName, handCount: 0, faceUpCards: [], faceDownCount: 0, isConnected: true },
     }, playerId);
 
     // Send room info to new player
@@ -62,6 +63,7 @@ export class Room {
       id: p.id,
       name: p.name,
       handCount: 0,
+      faceUpCards: [],
       faceDownCount: 0,
       isConnected: true,
     }));
@@ -149,6 +151,10 @@ export class Room {
         this.handlePlayCards(playerId, message.cardIds);
         break;
 
+      case 'PLAY_FACE_UP_CARDS':
+        this.handlePlayFaceUpCards(playerId, message.cardIds);
+        break;
+
       case 'PICKUP_PYRE':
         this.handlePickupPyre(playerId);
         break;
@@ -166,6 +172,30 @@ export class Room {
     if (newState) {
       const cards = this.gameState.players
         .find((p) => p.id === playerId)?.hand
+        .filter((c) => cardIds.includes(c.id)) ?? [];
+
+      this.gameState = newState;
+      this.broadcast({ type: 'CARDS_PLAYED', playerId, cards });
+      this.sendGameStateToAll();
+
+      if (newState.phase === 'finished') {
+        this.broadcast({ type: 'GAME_OVER', winnerId: newState.winner! });
+      }
+    } else {
+      const player = this.players.get(playerId);
+      if (player) {
+        this.send(player.ws, { type: 'ERROR', message: 'Invalid play' });
+      }
+    }
+  }
+
+  private handlePlayFaceUpCards(playerId: string, cardIds: string[]): void {
+    if (!this.gameState) return;
+
+    const newState = playFaceUpCards(this.gameState, playerId, cardIds);
+    if (newState) {
+      const cards = this.gameState.players
+        .find((p) => p.id === playerId)?.faceUpCards
         .filter((c) => cardIds.includes(c.id)) ?? [];
 
       this.gameState = newState;
@@ -241,6 +271,7 @@ export class Room {
       id: p.id,
       name: p.name,
       handCount: p.hand.length,
+      faceUpCards: p.faceUpCards,  // Visible to all players
       faceDownCount: p.faceDownCards.length,
       isConnected: p.isConnected,
     }));
@@ -255,6 +286,7 @@ export class Room {
       winner: this.gameState.winner,
       yourPlayerId: forPlayerId,
       yourHand: playerData?.hand ?? [],
+      yourFaceUpCards: playerData?.faceUpCards ?? [],
       yourFaceDownCards: playerData?.faceDownCards ?? [],
     };
   }

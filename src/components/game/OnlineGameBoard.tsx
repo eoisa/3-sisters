@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import type { OnlineGameState, Card, ClientPlayer } from '../../types';
-import { CardHand, FaceDownCards } from '../card';
+import { CardHand, FaceDownCards, FaceUpCards } from '../card';
 import { Button } from '../ui';
 import { Pyre } from './Pyre';
 import { TurnIndicator } from './TurnIndicator';
 import { GameLog } from './GameLog';
+import { SUIT_SYMBOLS } from '../../constants';
 import { isValidPlay, getCardById } from '../../utils';
 
 interface OnlineGameBoardProps {
   gameState: OnlineGameState;
   isMyTurn: boolean;
   onPlayCards: (cardIds: string[]) => void;
+  onPlayFaceUpCards: (cardIds: string[]) => void;
   onPickupPyre: () => void;
   onFlipFaceDown: (index: number) => void;
   onMainMenu: () => void;
@@ -20,15 +22,18 @@ export function OnlineGameBoard({
   gameState,
   isMyTurn,
   onPlayCards,
+  onPlayFaceUpCards,
   onPickupPyre,
   onFlipFaceDown,
   onMainMenu,
 }: OnlineGameBoardProps) {
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
+  const [selectedFaceUpCardIds, setSelectedFaceUpCardIds] = useState<string[]>([]);
 
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
   const topPyreCard = gameState.pyre.length > 0 ? gameState.pyre[gameState.pyre.length - 1] : null;
-  const playingFaceDown = gameState.yourHand.length === 0 && gameState.yourFaceDownCards.length > 0;
+  const playingFaceUp = gameState.yourHand.length === 0 && gameState.yourFaceUpCards.length > 0;
+  const playingFaceDown = gameState.yourHand.length === 0 && gameState.yourFaceUpCards.length === 0 && gameState.yourFaceDownCards.length > 0;
   const winner = gameState.winner
     ? gameState.players.find((p) => p.id === gameState.winner)
     : null;
@@ -63,6 +68,26 @@ export function OnlineGameBoard({
     });
   };
 
+  const handleFaceUpCardClick = (cardId: string) => {
+    if (!isMyTurn || !playingFaceUp) return;
+
+    setSelectedFaceUpCardIds((prev) => {
+      if (prev.includes(cardId)) {
+        return prev.filter((id) => id !== cardId);
+      }
+
+      if (prev.length > 0) {
+        const firstCard = getCardById(gameState.yourFaceUpCards, prev[0]);
+        const newCard = getCardById(gameState.yourFaceUpCards, cardId);
+        if (firstCard && newCard && firstCard.rank !== newCard.rank) {
+          return [cardId];
+        }
+      }
+
+      return [...prev, cardId];
+    });
+  };
+
   const handlePlayCards = () => {
     if (selectedCardIds.length === 0) return;
 
@@ -76,10 +101,31 @@ export function OnlineGameBoard({
     }
   };
 
+  const handlePlayFaceUpCards = () => {
+    if (selectedFaceUpCardIds.length === 0) return;
+
+    const cards = selectedFaceUpCardIds
+      .map((id) => getCardById(gameState.yourFaceUpCards, id))
+      .filter((c): c is Card => c !== undefined);
+
+    if (isValidPlay(cards, topPyreCard)) {
+      onPlayFaceUpCards(selectedFaceUpCardIds);
+      setSelectedFaceUpCardIds([]);
+    }
+  };
+
   const canPlay = () => {
     if (selectedCardIds.length === 0) return false;
     const cards = selectedCardIds
       .map((id) => getCardById(gameState.yourHand, id))
+      .filter((c): c is Card => c !== undefined);
+    return isValidPlay(cards, topPyreCard);
+  };
+
+  const canPlayFaceUp = () => {
+    if (selectedFaceUpCardIds.length === 0) return false;
+    const cards = selectedFaceUpCardIds
+      .map((id) => getCardById(gameState.yourFaceUpCards, id))
       .filter((c): c is Card => c !== undefined);
     return isValidPlay(cards, topPyreCard);
   };
@@ -192,6 +238,21 @@ export function OnlineGameBoard({
           </div>
         )}
 
+        {/* Face-up cards */}
+        {gameState.yourFaceUpCards.length > 0 && (
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', marginBottom: '8px', textAlign: 'center' }}>
+              Face-up cards
+            </div>
+            <FaceUpCards
+              cards={gameState.yourFaceUpCards}
+              selectedCardIds={selectedFaceUpCardIds}
+              onCardClick={handleFaceUpCardClick}
+              selectable={isMyTurn && playingFaceUp}
+            />
+          </div>
+        )}
+
         {/* Hand */}
         {gameState.yourHand.length > 0 && (
           <CardHand
@@ -202,8 +263,8 @@ export function OnlineGameBoard({
           />
         )}
 
-        {/* Action buttons */}
-        {isMyTurn && !playingFaceDown && (
+        {/* Action buttons - Hand */}
+        {isMyTurn && !playingFaceDown && !playingFaceUp && (
           <div
             style={{
               display: 'flex',
@@ -218,6 +279,33 @@ export function OnlineGameBoard({
               disabled={!canPlay()}
             >
               Play Cards
+            </Button>
+            <Button
+              variant="danger"
+              onClick={onPickupPyre}
+              disabled={gameState.pyre.length === 0}
+            >
+              Pick Up Pyre
+            </Button>
+          </div>
+        )}
+
+        {/* Action buttons - Face-up */}
+        {isMyTurn && playingFaceUp && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '12px',
+              marginTop: '16px',
+            }}
+          >
+            <Button
+              variant="success"
+              onClick={handlePlayFaceUpCards}
+              disabled={!canPlayFaceUp()}
+            >
+              Play Table Cards
             </Button>
             <Button
               variant="danger"
@@ -344,6 +432,38 @@ function OnlineOpponentArea({
           </div>
           <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', marginTop: '4px' }}>
             face-down
+          </div>
+        </div>
+      )}
+
+      {player.faceUpCards.length > 0 && (
+        <div style={{ marginTop: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '4px' }}>
+            {player.faceUpCards.map((card) => (
+              <div
+                key={card.id}
+                style={{
+                  width: '28px',
+                  height: '40px',
+                  background: 'white',
+                  borderRadius: '4px',
+                  border: '2px solid #ccc',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: card.suit === 'hearts' || card.suit === 'diamonds' ? '#c62828' : '#1a1a1a',
+                }}
+              >
+                <span>{card.rank}</span>
+                <span style={{ fontSize: '12px' }}>{SUIT_SYMBOLS[card.suit]}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', marginTop: '4px' }}>
+            face-up
           </div>
         </div>
       )}

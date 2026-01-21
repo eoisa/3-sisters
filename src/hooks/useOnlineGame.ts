@@ -23,6 +23,7 @@ interface UseOnlineGameResult {
   leaveRoom: () => void;
   startGame: () => void;
   playCards: (cardIds: string[]) => void;
+  playFaceUpCards: (cardIds: string[]) => void;
   pickupPyre: () => void;
   flipFaceDown: (cardIndex: number) => void;
 }
@@ -174,6 +175,13 @@ export function useOnlineGame(): UseOnlineGameResult {
     [send]
   );
 
+  const playFaceUpCards = useCallback(
+    (cardIds: string[]) => {
+      send({ type: 'PLAY_FACE_UP_CARDS', cardIds });
+    },
+    [send]
+  );
+
   const pickupPyre = useCallback(() => {
     send({ type: 'PICKUP_PYRE' });
   }, [send]);
@@ -210,6 +218,7 @@ export function useOnlineGame(): UseOnlineGameResult {
     leaveRoom,
     startGame,
     playCards,
+    playFaceUpCards,
     pickupPyre,
     flipFaceDown,
   };

@@ -26,6 +26,7 @@ export function OnlineLobby({ onBack }: OnlineLobbyProps) {
     leaveRoom,
     startGame,
     playCards,
+    playFaceUpCards,
     pickupPyre,
     flipFaceDown,
   } = useOnlineGame();
@@ -59,6 +60,7 @@ export function OnlineLobby({ onBack }: OnlineLobbyProps) {
         gameState={gameState}
         isMyTurn={isMyTurn}
         onPlayCards={playCards}
+        onPlayFaceUpCards={playFaceUpCards}
         onPickupPyre={pickupPyre}
         onFlipFaceDown={flipFaceDown}
         onMainMenu={handleMainMenu}

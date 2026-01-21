@@ -11,6 +11,7 @@ export interface Player {
   id: string;
   name: string;
   hand: Card[];
+  faceUpCards: Card[];
   faceDownCards: Card[];
   isConnected: boolean;
 }
@@ -49,6 +50,7 @@ export type ClientMessage =
   | { type: 'LEAVE_ROOM' }
   | { type: 'START_GAME' }
   | { type: 'PLAY_CARDS'; cardIds: string[] }
+  | { type: 'PLAY_FACE_UP_CARDS'; cardIds: string[] }
   | { type: 'PICKUP_PYRE' }
   | { type: 'FLIP_FACE_DOWN'; cardIndex: number };
 
@@ -77,6 +79,7 @@ export interface ClientGameState {
   winner: string | null;
   yourPlayerId: string;
   yourHand: Card[];
+  yourFaceUpCards: Card[];
   yourFaceDownCards: Card[];
 }
 
@@ -84,6 +87,7 @@ export interface ClientPlayer {
   id: string;
   name: string;
   handCount: number;
+  faceUpCards: Card[];  // Visible to all players
   faceDownCount: number;
   isConnected: boolean;
 }
