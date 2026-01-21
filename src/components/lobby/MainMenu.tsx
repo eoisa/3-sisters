@@ -30,9 +30,9 @@ export function MainMenu({ onSinglePlayer, onLocalGame, onOnlineGame, onHowToPla
           src="/favicon.png"
           alt="3 Sisters Logo"
           style={{
-            width: '120px',
-            height: '120px',
-            marginBottom: '16px',
+            width: '160px',
+            height: '160px',
+            marginBottom: '24px',
           }}
         />
         <h1
