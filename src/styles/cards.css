@@ -172,6 +172,12 @@
   position: absolute;
   top: 0;
   left: 0;
+  pointer-events: none;
+  cursor: default;
+}
+
+.card-stack .card:hover .card__inner {
+  transform: none;
 }
 
 .card-stack .card:nth-child(n + 2) {

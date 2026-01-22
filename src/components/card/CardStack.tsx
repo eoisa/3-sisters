@@ -17,7 +17,6 @@ export function CardStack({ cards, maxVisible = 4, className = '' }: CardStackPr
         <Card
           key={card.id}
           card={card}
-          disabled
           className={`animate-deal-${index + 1}`}
         />
       ))}
