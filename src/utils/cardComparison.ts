@@ -1,27 +1,39 @@
 import type { Card, Rank } from '../types';
 import { RANK_VALUES, WILD_RANK, BURN_RANK, REVERSE_RANK } from '../constants';
 
-export function canPlayOn(cardToPlay: Card, topCard: Card | null): boolean {
+/**
+ * Find the last non-wild card in the pyre.
+ * Wild cards (2s and 8s) don't change the card requirement.
+ */
+export function getLastNonWildCard(pyre: Card[]): Card | null {
+  for (let i = pyre.length - 1; i >= 0; i--) {
+    const card = pyre[i];
+    if (card.rank !== WILD_RANK && card.rank !== REVERSE_RANK) {
+      return card;
+    }
+  }
+  return null;
+}
+
+export function canPlayOn(cardToPlay: Card, pyre: Card[]): boolean {
   // 2s (wild), 8s (reverse wild), and 10s (burn) can always be played
   if (cardToPlay.rank === WILD_RANK || cardToPlay.rank === BURN_RANK || cardToPlay.rank === REVERSE_RANK) {
     return true;
   }
 
-  // If pyre is empty, any card can be played
-  if (!topCard) {
+  // Find the last non-wild card to determine what we need to beat
+  const cardToBeat = getLastNonWildCard(pyre);
+
+  // If pyre is empty or all wilds, any card can be played
+  if (!cardToBeat) {
     return true;
   }
 
-  // If top card is a 2 (wild) or 8 (reverse), any card can be played on it
-  if (topCard.rank === WILD_RANK || topCard.rank === REVERSE_RANK) {
-    return true;
-  }
-
-  // Must play equal or higher rank
-  return RANK_VALUES[cardToPlay.rank] >= RANK_VALUES[topCard.rank];
+  // Must play equal or higher rank than the last non-wild card
+  return RANK_VALUES[cardToPlay.rank] >= RANK_VALUES[cardToBeat.rank];
 }
 
-export function isValidPlay(cards: Card[], topCard: Card | null): boolean {
+export function isValidPlay(cards: Card[], pyre: Card[]): boolean {
   if (cards.length === 0) {
     return false;
   }
@@ -32,8 +44,8 @@ export function isValidPlay(cards: Card[], topCard: Card | null): boolean {
     return false;
   }
 
-  // Check if can play on top card
-  return canPlayOn(cards[0], topCard);
+  // Check if can play on pyre
+  return canPlayOn(cards[0], pyre);
 }
 
 export function isWildCard(card: Card): boolean {

@@ -1,5 +1,5 @@
 import type { GameState } from '../../types';
-import { getCurrentPlayer, getTopPyreCard, getWinner } from '../../game';
+import { getCurrentPlayer, getWinner } from '../../game';
 import { PlayerArea, OpponentArea } from '../player';
 import { Button } from '../ui';
 import { Pyre } from './Pyre';
@@ -29,7 +29,6 @@ export function GameBoard({
   onMainMenu,
 }: GameBoardProps) {
   const currentPlayer = getCurrentPlayer(state);
-  const topPyreCard = getTopPyreCard(state);
   const winner = getWinner(state);
   const localPlayer = state.players.find((p) => p.id === localPlayerId);
   const opponents = state.players.filter((p) => p.id !== localPlayerId);
@@ -100,12 +99,11 @@ export function GameBoard({
           <PlayerArea
             player={localPlayer}
             isCurrentPlayer={currentPlayer?.id === localPlayerId}
-            topPyreCard={topPyreCard}
+            pyre={state.pyre}
             onPlayCards={onPlayCards}
             onPlayFaceUpCards={onPlayFaceUpCards}
             onPickupPyre={onPickupPyre}
             onFlipFaceDown={onFlipFaceDown}
-            pyreEmpty={state.pyre.length === 0}
           />
         </div>
       )}

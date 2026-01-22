@@ -8,23 +8,21 @@ import { isValidPlay, getCardById } from '../../utils';
 interface PlayerAreaProps {
   player: Player;
   isCurrentPlayer: boolean;
-  topPyreCard: Card | null;
+  pyre: Card[];
   onPlayCards: (cardIds: string[]) => void;
   onPlayFaceUpCards: (cardIds: string[]) => void;
   onPickupPyre: () => void;
   onFlipFaceDown: (index: number) => void;
-  pyreEmpty: boolean;
 }
 
 export function PlayerArea({
   player,
   isCurrentPlayer,
-  topPyreCard,
+  pyre,
   onPlayCards,
   onPlayFaceUpCards,
   onPickupPyre,
   onFlipFaceDown,
-  pyreEmpty,
 }: PlayerAreaProps) {
   const [selectedCardIds, setSelectedCardIds] = useState<string[]>([]);
   const [selectedFaceUpCardIds, setSelectedFaceUpCardIds] = useState<string[]>([]);
@@ -81,7 +79,7 @@ export function PlayerArea({
       .map((id) => getCardById(player.hand, id))
       .filter((c): c is Card => c !== undefined);
 
-    if (isValidPlay(cards, topPyreCard)) {
+    if (isValidPlay(cards, pyre)) {
       onPlayCards(selectedCardIds);
       setSelectedCardIds([]);
     }
@@ -94,7 +92,7 @@ export function PlayerArea({
       .map((id) => getCardById(player.faceUpCards, id))
       .filter((c): c is Card => c !== undefined);
 
-    if (isValidPlay(cards, topPyreCard)) {
+    if (isValidPlay(cards, pyre)) {
       onPlayFaceUpCards(selectedFaceUpCardIds);
       setSelectedFaceUpCardIds([]);
     }
@@ -105,7 +103,7 @@ export function PlayerArea({
     const cards = selectedCardIds
       .map((id) => getCardById(player.hand, id))
       .filter((c): c is Card => c !== undefined);
-    return isValidPlay(cards, topPyreCard);
+    return isValidPlay(cards, pyre);
   };
 
   const canPlayFaceUp = () => {
@@ -113,7 +111,7 @@ export function PlayerArea({
     const cards = selectedFaceUpCardIds
       .map((id) => getCardById(player.faceUpCards, id))
       .filter((c): c is Card => c !== undefined);
-    return isValidPlay(cards, topPyreCard);
+    return isValidPlay(cards, pyre);
   };
 
   return (
@@ -217,7 +215,7 @@ export function PlayerArea({
           <Button
             variant="danger"
             onClick={onPickupPyre}
-            disabled={pyreEmpty}
+            disabled={pyre.length === 0}
           >
             Pick Up Pyre
           </Button>
@@ -244,7 +242,7 @@ export function PlayerArea({
           <Button
             variant="danger"
             onClick={onPickupPyre}
-            disabled={pyreEmpty}
+            disabled={pyre.length === 0}
           >
             Pick Up Pyre
           </Button>

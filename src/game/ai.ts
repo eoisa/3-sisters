@@ -22,11 +22,9 @@ export function getAIDecision(
     return { action: 'pickup' };
   }
 
-  const pyreTopCard = state.pyre.length > 0 ? state.pyre[state.pyre.length - 1] : null;
-
   // If hand is empty but has face-up cards, play from face-up
   if (player.hand.length === 0 && player.faceUpCards.length > 0) {
-    const playableFaceUpCards = findPlayableCards(player.faceUpCards, pyreTopCard);
+    const playableFaceUpCards = findPlayableCards(player.faceUpCards, state.pyre);
 
     if (playableFaceUpCards.length === 0) {
       return { action: 'pickup' };
@@ -53,7 +51,7 @@ export function getAIDecision(
   }
 
   // Find all playable cards from hand
-  const playableCards = findPlayableCards(player.hand, pyreTopCard);
+  const playableCards = findPlayableCards(player.hand, state.pyre);
 
   if (playableCards.length === 0) {
     return { action: 'pickup' };
@@ -72,8 +70,8 @@ export function getAIDecision(
   };
 }
 
-function findPlayableCards(hand: Card[], topCard: Card | null): Card[] {
-  return hand.filter((card) => isValidPlay([card], topCard));
+function findPlayableCards(hand: Card[], pyre: Card[]): Card[] {
+  return hand.filter((card) => isValidPlay([card], pyre));
 }
 
 function chooseCardsToPlay(

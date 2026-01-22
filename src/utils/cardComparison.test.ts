@@ -8,6 +8,7 @@ import {
   getRankValue,
   compareCards,
   sortCardsByRank,
+  getLastNonWildCard,
 } from './cardComparison';
 import type { Card } from '../types';
 
@@ -16,116 +17,170 @@ function card(rank: Card['rank'], suit: Card['suit'] = 'hearts'): Card {
   return { id: `${suit}-${rank}`, suit, rank };
 }
 
+describe('getLastNonWildCard', () => {
+  it('returns null for empty pyre', () => {
+    expect(getLastNonWildCard([])).toBe(null);
+  });
+
+  it('returns the top card if it is not a wild', () => {
+    expect(getLastNonWildCard([card('7')])).toEqual(card('7'));
+    expect(getLastNonWildCard([card('4'), card('K')])).toEqual(card('K'));
+  });
+
+  it('returns the last non-wild card when top is a 2 (wild)', () => {
+    expect(getLastNonWildCard([card('7'), card('2')])).toEqual(card('7'));
+    expect(getLastNonWildCard([card('K'), card('2')])).toEqual(card('K'));
+  });
+
+  it('returns the last non-wild card when top is an 8 (reverse)', () => {
+    expect(getLastNonWildCard([card('7'), card('8')])).toEqual(card('7'));
+    expect(getLastNonWildCard([card('K'), card('8')])).toEqual(card('K'));
+  });
+
+  it('handles multiple wilds on top', () => {
+    expect(getLastNonWildCard([card('7'), card('2'), card('8')])).toEqual(card('7'));
+    expect(getLastNonWildCard([card('K'), card('8'), card('2'), card('8')])).toEqual(card('K'));
+  });
+
+  it('returns null if pyre is all wilds', () => {
+    expect(getLastNonWildCard([card('2')])).toBe(null);
+    expect(getLastNonWildCard([card('8')])).toBe(null);
+    expect(getLastNonWildCard([card('2'), card('8'), card('2')])).toBe(null);
+  });
+});
+
 describe('canPlayOn', () => {
   describe('special cards (always playable)', () => {
     it('allows 2 (wild) to be played on any card', () => {
-      expect(canPlayOn(card('2'), card('A'))).toBe(true);
-      expect(canPlayOn(card('2'), card('K'))).toBe(true);
-      expect(canPlayOn(card('2'), card('4'))).toBe(true);
+      expect(canPlayOn(card('2'), [card('A')])).toBe(true);
+      expect(canPlayOn(card('2'), [card('K')])).toBe(true);
+      expect(canPlayOn(card('2'), [card('4')])).toBe(true);
     });
 
     it('allows 10 (burn) to be played on any card', () => {
-      expect(canPlayOn(card('10'), card('A'))).toBe(true);
-      expect(canPlayOn(card('10'), card('K'))).toBe(true);
-      expect(canPlayOn(card('10'), card('4'))).toBe(true);
+      expect(canPlayOn(card('10'), [card('A')])).toBe(true);
+      expect(canPlayOn(card('10'), [card('K')])).toBe(true);
+      expect(canPlayOn(card('10'), [card('4')])).toBe(true);
     });
 
     it('allows 8 (reverse) to be played on any card', () => {
-      expect(canPlayOn(card('8'), card('A'))).toBe(true);
-      expect(canPlayOn(card('8'), card('K'))).toBe(true);
-      expect(canPlayOn(card('8'), card('4'))).toBe(true);
+      expect(canPlayOn(card('8'), [card('A')])).toBe(true);
+      expect(canPlayOn(card('8'), [card('K')])).toBe(true);
+      expect(canPlayOn(card('8'), [card('4')])).toBe(true);
     });
   });
 
   describe('playing on empty pyre', () => {
-    it('allows any card to be played on empty pyre (null)', () => {
-      expect(canPlayOn(card('4'), null)).toBe(true);
-      expect(canPlayOn(card('A'), null)).toBe(true);
-      expect(canPlayOn(card('J'), null)).toBe(true);
+    it('allows any card to be played on empty pyre', () => {
+      expect(canPlayOn(card('4'), [])).toBe(true);
+      expect(canPlayOn(card('A'), [])).toBe(true);
+      expect(canPlayOn(card('J'), [])).toBe(true);
     });
   });
 
-  describe('playing on wild cards (2 or 8)', () => {
-    it('allows any card to be played on a 2 (wild)', () => {
-      expect(canPlayOn(card('4'), card('2'))).toBe(true);
-      expect(canPlayOn(card('5'), card('2'))).toBe(true);
-      expect(canPlayOn(card('A'), card('2'))).toBe(true);
+  describe('playing on wild cards (2 or 8) - must beat last non-wild', () => {
+    it('requires beating the last non-wild card when a 2 is on top', () => {
+      // Pyre: 7, then 2. Must beat the 7.
+      expect(canPlayOn(card('7'), [card('7'), card('2')])).toBe(true);  // equal
+      expect(canPlayOn(card('9'), [card('7'), card('2')])).toBe(true);  // higher
+      expect(canPlayOn(card('5'), [card('7'), card('2')])).toBe(false); // lower
     });
 
-    it('allows any card to be played on an 8 (reverse)', () => {
-      expect(canPlayOn(card('4'), card('8'))).toBe(true);
-      expect(canPlayOn(card('5'), card('8'))).toBe(true);
-      expect(canPlayOn(card('A'), card('8'))).toBe(true);
+    it('requires beating the last non-wild card when an 8 is on top', () => {
+      // Pyre: K, then 8. Must beat the K.
+      expect(canPlayOn(card('K'), [card('K'), card('8')])).toBe(true);  // equal
+      expect(canPlayOn(card('A'), [card('K'), card('8')])).toBe(true);  // higher
+      expect(canPlayOn(card('Q'), [card('K'), card('8')])).toBe(false); // lower
+    });
+
+    it('allows any card when pyre is all wilds', () => {
+      expect(canPlayOn(card('4'), [card('2')])).toBe(true);
+      expect(canPlayOn(card('4'), [card('8')])).toBe(true);
+      expect(canPlayOn(card('4'), [card('2'), card('8'), card('2')])).toBe(true);
+    });
+
+    it('handles multiple wilds on top of non-wild', () => {
+      // Pyre: 9, 2, 8, 2. Must beat the 9.
+      expect(canPlayOn(card('9'), [card('9'), card('2'), card('8'), card('2')])).toBe(true);
+      expect(canPlayOn(card('J'), [card('9'), card('2'), card('8'), card('2')])).toBe(true);
+      expect(canPlayOn(card('6'), [card('9'), card('2'), card('8'), card('2')])).toBe(false);
     });
   });
 
   describe('normal rank comparison', () => {
     it('allows equal rank', () => {
-      expect(canPlayOn(card('7'), card('7'))).toBe(true);
-      expect(canPlayOn(card('K'), card('K'))).toBe(true);
+      expect(canPlayOn(card('7'), [card('7')])).toBe(true);
+      expect(canPlayOn(card('K'), [card('K')])).toBe(true);
     });
 
     it('allows higher rank', () => {
-      expect(canPlayOn(card('8'), card('7'))).toBe(true);
-      expect(canPlayOn(card('A'), card('K'))).toBe(true);
-      expect(canPlayOn(card('K'), card('4'))).toBe(true);
+      expect(canPlayOn(card('9'), [card('7')])).toBe(true);
+      expect(canPlayOn(card('A'), [card('K')])).toBe(true);
+      expect(canPlayOn(card('K'), [card('4')])).toBe(true);
     });
 
     it('rejects lower rank', () => {
-      expect(canPlayOn(card('6'), card('7'))).toBe(false);
-      expect(canPlayOn(card('4'), card('A'))).toBe(false);
-      expect(canPlayOn(card('J'), card('Q'))).toBe(false);
+      expect(canPlayOn(card('6'), [card('7')])).toBe(false);
+      expect(canPlayOn(card('4'), [card('A')])).toBe(false);
+      expect(canPlayOn(card('J'), [card('Q')])).toBe(false);
     });
   });
 
   describe('rank ordering', () => {
     it('orders ranks correctly: 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < J < Q < K < A < 2', () => {
       // 3 is lowest non-discarded rank
-      expect(canPlayOn(card('4'), card('3'))).toBe(true);
+      expect(canPlayOn(card('4'), [card('3')])).toBe(true);
 
       // Face cards order
-      expect(canPlayOn(card('J'), card('10'))).toBe(true);
-      expect(canPlayOn(card('Q'), card('J'))).toBe(true);
-      expect(canPlayOn(card('K'), card('Q'))).toBe(true);
-      expect(canPlayOn(card('A'), card('K'))).toBe(true);
+      expect(canPlayOn(card('J'), [card('10')])).toBe(true);
+      expect(canPlayOn(card('Q'), [card('J')])).toBe(true);
+      expect(canPlayOn(card('K'), [card('Q')])).toBe(true);
+      expect(canPlayOn(card('A'), [card('K')])).toBe(true);
 
       // 2 is highest (wild)
-      expect(canPlayOn(card('2'), card('A'))).toBe(true);
+      expect(canPlayOn(card('2'), [card('A')])).toBe(true);
     });
   });
 });
 
 describe('isValidPlay', () => {
   it('returns false for empty array', () => {
-    expect(isValidPlay([], null)).toBe(false);
-    expect(isValidPlay([], card('7'))).toBe(false);
+    expect(isValidPlay([], [])).toBe(false);
+    expect(isValidPlay([], [card('7')])).toBe(false);
   });
 
   it('returns true for single valid card', () => {
-    expect(isValidPlay([card('7')], card('5'))).toBe(true);
-    expect(isValidPlay([card('A')], null)).toBe(true);
+    expect(isValidPlay([card('7')], [card('5')])).toBe(true);
+    expect(isValidPlay([card('A')], [])).toBe(true);
   });
 
   it('returns false for single invalid card', () => {
-    expect(isValidPlay([card('5')], card('7'))).toBe(false);
+    expect(isValidPlay([card('5')], [card('7')])).toBe(false);
   });
 
   it('allows multiple cards of the same rank', () => {
-    expect(isValidPlay([card('7', 'hearts'), card('7', 'diamonds')], card('5'))).toBe(true);
-    expect(isValidPlay([card('K', 'hearts'), card('K', 'spades'), card('K', 'clubs')], card('J'))).toBe(true);
+    expect(isValidPlay([card('7', 'hearts'), card('7', 'diamonds')], [card('5')])).toBe(true);
+    expect(isValidPlay([card('K', 'hearts'), card('K', 'spades'), card('K', 'clubs')], [card('J')])).toBe(true);
   });
 
   it('rejects multiple cards of different ranks', () => {
-    expect(isValidPlay([card('7'), card('8')], null)).toBe(false);
-    expect(isValidPlay([card('K'), card('A')], card('J'))).toBe(false);
+    expect(isValidPlay([card('7'), card('9')], [])).toBe(false);
+    expect(isValidPlay([card('K'), card('A')], [card('J')])).toBe(false);
   });
 
-  it('validates multiple cards against top card', () => {
+  it('validates multiple cards against last non-wild card', () => {
     // Multiple 6s cannot be played on a 7
-    expect(isValidPlay([card('6', 'hearts'), card('6', 'diamonds')], card('7'))).toBe(false);
+    expect(isValidPlay([card('6', 'hearts'), card('6', 'diamonds')], [card('7')])).toBe(false);
 
     // Multiple 8s can be played on anything (reverse)
-    expect(isValidPlay([card('8', 'hearts'), card('8', 'diamonds')], card('A'))).toBe(true);
+    expect(isValidPlay([card('8', 'hearts'), card('8', 'diamonds')], [card('A')])).toBe(true);
+  });
+
+  it('validates against last non-wild when wild is on top', () => {
+    // Pyre: 7, 2. Multiple 6s cannot beat 7
+    expect(isValidPlay([card('6', 'hearts'), card('6', 'diamonds')], [card('7'), card('2')])).toBe(false);
+    // Multiple 9s can beat 7
+    expect(isValidPlay([card('9', 'hearts'), card('9', 'diamonds')], [card('7'), card('2')])).toBe(true);
   });
 });
 

@@ -31,7 +31,6 @@ export function OnlineGameBoard({
   const [selectedFaceUpCardIds, setSelectedFaceUpCardIds] = useState<string[]>([]);
 
   const currentPlayer = gameState.players[gameState.currentPlayerIndex];
-  const topPyreCard = gameState.pyre.length > 0 ? gameState.pyre[gameState.pyre.length - 1] : null;
   const playingFaceUp = gameState.yourHand.length === 0 && gameState.yourFaceUpCards.length > 0;
   const playingFaceDown = gameState.yourHand.length === 0 && gameState.yourFaceUpCards.length === 0 && gameState.yourFaceDownCards.length > 0;
   const winner = gameState.winner
@@ -95,7 +94,7 @@ export function OnlineGameBoard({
       .map((id) => getCardById(gameState.yourHand, id))
       .filter((c): c is Card => c !== undefined);
 
-    if (isValidPlay(cards, topPyreCard)) {
+    if (isValidPlay(cards, gameState.pyre)) {
       onPlayCards(selectedCardIds);
       setSelectedCardIds([]);
     }
@@ -108,7 +107,7 @@ export function OnlineGameBoard({
       .map((id) => getCardById(gameState.yourFaceUpCards, id))
       .filter((c): c is Card => c !== undefined);
 
-    if (isValidPlay(cards, topPyreCard)) {
+    if (isValidPlay(cards, gameState.pyre)) {
       onPlayFaceUpCards(selectedFaceUpCardIds);
       setSelectedFaceUpCardIds([]);
     }
@@ -119,7 +118,7 @@ export function OnlineGameBoard({
     const cards = selectedCardIds
       .map((id) => getCardById(gameState.yourHand, id))
       .filter((c): c is Card => c !== undefined);
-    return isValidPlay(cards, topPyreCard);
+    return isValidPlay(cards, gameState.pyre);
   };
 
   const canPlayFaceUp = () => {
@@ -127,7 +126,7 @@ export function OnlineGameBoard({
     const cards = selectedFaceUpCardIds
       .map((id) => getCardById(gameState.yourFaceUpCards, id))
       .filter((c): c is Card => c !== undefined);
-    return isValidPlay(cards, topPyreCard);
+    return isValidPlay(cards, gameState.pyre);
   };
 
   return (

@@ -57,9 +57,9 @@ export function HowToPlay({ onBack }: HowToPlayProps) {
         <section style={{ marginBottom: '24px' }}>
           <h2 style={{ fontSize: '20px', marginBottom: '12px' }}>Special Cards</h2>
           <ul style={{ opacity: 0.9, lineHeight: 1.8, paddingLeft: '20px' }}>
-            <li><strong>2s (Wild)</strong> - Can be played on any card, next player continues</li>
-            <li><strong>8s (Wild)</strong> - Acts the same as a 2, as well as reversing the flow of the game</li>
-            <li><strong>10s (Burn)</strong> - Discards the entire pyre, you go again</li>
+            <li><strong>2s (Wild)</strong> - Can be played on any card. The next player must still beat the last non-wild card.</li>
+            <li><strong>8s (Reverse)</strong> - Reverses the direction of play. The next player must still beat the last non-wild card.</li>
+            <li><strong>10s (Burn)</strong> - Discards the entire pyre and ends your turn</li>
           </ul>
         </section>
 

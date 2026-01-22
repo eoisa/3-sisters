@@ -41,20 +41,39 @@ export function shuffleDeck(deck: Card[]): Card[] {
   return shuffled;
 }
 
-export function canPlayOn(cardToPlay: Card, topCard: Card | null): boolean {
-  // 2s (wild), 8s (reverse), and 10s (burn) can always be played
-  if (cardToPlay.rank === WILD_RANK || cardToPlay.rank === BURN_RANK || cardToPlay.rank === REVERSE_RANK) return true;
-  if (!topCard) return true;
-  // If top card is a 2 (wild) or 8 (reverse), any card can be played on it
-  if (topCard.rank === WILD_RANK || topCard.rank === REVERSE_RANK) return true;
-  return RANK_VALUES[cardToPlay.rank] >= RANK_VALUES[topCard.rank];
+/**
+ * Find the last non-wild card in the pyre.
+ * Wild cards (2s and 8s) don't change the card requirement.
+ */
+export function getLastNonWildCard(pyre: Card[]): Card | null {
+  for (let i = pyre.length - 1; i >= 0; i--) {
+    const card = pyre[i];
+    if (card.rank !== WILD_RANK && card.rank !== REVERSE_RANK) {
+      return card;
+    }
+  }
+  return null;
 }
 
-export function isValidPlay(cards: Card[], topCard: Card | null): boolean {
+export function canPlayOn(cardToPlay: Card, pyre: Card[]): boolean {
+  // 2s (wild), 8s (reverse), and 10s (burn) can always be played
+  if (cardToPlay.rank === WILD_RANK || cardToPlay.rank === BURN_RANK || cardToPlay.rank === REVERSE_RANK) return true;
+
+  // Find the last non-wild card to determine what we need to beat
+  const cardToBeat = getLastNonWildCard(pyre);
+
+  // If pyre is empty or all wilds, any card can be played
+  if (!cardToBeat) return true;
+
+  // Must play equal or higher rank than the last non-wild card
+  return RANK_VALUES[cardToPlay.rank] >= RANK_VALUES[cardToBeat.rank];
+}
+
+export function isValidPlay(cards: Card[], pyre: Card[]): boolean {
   if (cards.length === 0) return false;
   const firstRank = cards[0].rank;
   if (!cards.every((c) => c.rank === firstRank)) return false;
-  return canPlayOn(cards[0], topCard);
+  return canPlayOn(cards[0], pyre);
 }
 
 export function isBurnCard(card: Card): boolean {
@@ -164,8 +183,7 @@ export function playCards(state: GameState, playerId: string, cardIds: string[])
 
   if (cardsToPlay.length !== cardIds.length) return null;
 
-  const topCard = state.pyre.length > 0 ? state.pyre[state.pyre.length - 1] : null;
-  if (!isValidPlay(cardsToPlay, topCard)) return null;
+  if (!isValidPlay(cardsToPlay, state.pyre)) return null;
 
   const newHand = player.hand.filter((c) => !cardIds.includes(c.id));
   const newPlayers = [...state.players];
@@ -278,12 +296,11 @@ export function flipFaceDown(state: GameState, playerId: string, cardIndex: numb
   if (cardIndex < 0 || cardIndex >= player.faceDownCards.length) return null;
 
   const card = player.faceDownCards[cardIndex];
-  const topCard = state.pyre.length > 0 ? state.pyre[state.pyre.length - 1] : null;
 
   const newFaceDownCards = [...player.faceDownCards];
   newFaceDownCards.splice(cardIndex, 1);
 
-  const canPlay = isValidPlay([card], topCard);
+  const canPlay = isValidPlay([card], state.pyre);
   const shouldBurn = isBurnCard(card);
   const shouldReverse = isReverseCard(card);
 
@@ -378,8 +395,7 @@ export function playFaceUpCards(state: GameState, playerId: string, cardIds: str
 
   if (cardsToPlay.length !== cardIds.length) return null;
 
-  const topCard = state.pyre.length > 0 ? state.pyre[state.pyre.length - 1] : null;
-  if (!isValidPlay(cardsToPlay, topCard)) return null;
+  if (!isValidPlay(cardsToPlay, state.pyre)) return null;
 
   const newFaceUpCards = player.faceUpCards.filter((c) => !cardIds.includes(c.id));
   const newPlayers = [...state.players];

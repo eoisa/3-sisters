@@ -19,12 +19,10 @@ export function canPlayerPlay(state: GameState, playerId: string): boolean {
   const player = getPlayerById(state, playerId);
   if (!player) return false;
 
-  const topCard = getTopPyreCard(state);
-
   // Check hand first
   if (player.hand.length > 0) {
     for (const card of player.hand) {
-      if (isValidPlay([card], topCard)) {
+      if (isValidPlay([card], state.pyre)) {
         return true;
       }
     }
@@ -34,7 +32,7 @@ export function canPlayerPlay(state: GameState, playerId: string): boolean {
   // Then check face-up cards
   if (player.faceUpCards.length > 0) {
     for (const card of player.faceUpCards) {
-      if (isValidPlay([card], topCard)) {
+      if (isValidPlay([card], state.pyre)) {
         return true;
       }
     }
@@ -49,9 +47,7 @@ export function getPlayableCards(state: GameState, playerId: string): Card[] {
   const player = getPlayerById(state, playerId);
   if (!player) return [];
 
-  const topCard = getTopPyreCard(state);
-
-  return player.hand.filter((card) => isValidPlay([card], topCard));
+  return player.hand.filter((card) => isValidPlay([card], state.pyre));
 }
 
 export function isPlayerTurn(state: GameState, playerId: string): boolean {

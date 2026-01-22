@@ -15,8 +15,8 @@ Just a vibe-coded starter project to emulate the card game "3 sisters"
 
 ### Special Cards
 
-- **2s** - Wild cards. Playing a 2 effectively skips to the next player.
-- **8s** - Reverse wild cards. Playing an 8 reverses the direction of play and acts as a wild.
+- **2s** - Wild cards. Can be played at any time. The next player must still beat the last non-wild card.
+- **8s** - Reverse wild cards. Reverses the direction of play. The next player must still beat the last non-wild card.
 - **10s** - "Burn the pyre." Discards all cards currently in play and ends your turn.
 
 ### Setup
@@ -32,8 +32,8 @@ Just a vibe-coded starter project to emulate the card game "3 sisters"
 2. **Playing cards:** On your turn, play a card higher than the last card played. You may play multiple cards if they are all the same rank, but you cannot play different cards together.
 
 3. **Special plays:**
-   - Play a **2** (wild) at any time - skips to the next player.
-   - Play an **8** (reverse) at any time - reverses the direction of play and acts as a wild.
+   - Play a **2** (wild) at any time - skips to the next player, but they must still beat the last non-wild card.
+   - Play an **8** (reverse) at any time - reverses the direction of play, but the next player must still beat the last non-wild card.
    - Play a **10** at any time - burns the pyre (discards all cards in play) and ends your turn.
 
 4. **Picking up the pyre:** If you cannot play a card higher than the last one played (and don't have a 2, 8, or 10), you must pick up all cards in the pyre and add them to your hand.

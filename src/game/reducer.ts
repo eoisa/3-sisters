@@ -162,11 +162,8 @@ function playCards(state: GameState, playerId: string, cardIds: string[]): GameS
 
   if (cardsToPlay.length !== cardIds.length) return state;
 
-  // Get the top card of the pyre
-  const topCard = state.pyre.length > 0 ? state.pyre[state.pyre.length - 1] : null;
-
   // Validate the play
-  if (!isValidPlay(cardsToPlay, topCard)) return state;
+  if (!isValidPlay(cardsToPlay, state.pyre)) return state;
 
   // Remove cards from hand
   const newHand = removeCardsById(player.hand, cardIds);
@@ -264,9 +261,7 @@ function playFaceUpCards(state: GameState, playerId: string, cardIds: string[]):
 
   if (cardsToPlay.length !== cardIds.length) return state;
 
-  const topCard = state.pyre.length > 0 ? state.pyre[state.pyre.length - 1] : null;
-
-  if (!isValidPlay(cardsToPlay, topCard)) return state;
+  if (!isValidPlay(cardsToPlay, state.pyre)) return state;
 
   // Remove cards from face-up cards
   const newFaceUpCards = removeCardsById(player.faceUpCards, cardIds);
@@ -390,14 +385,13 @@ function flipFaceDown(state: GameState, playerId: string, cardIndex: number): Ga
   if (cardIndex < 0 || cardIndex >= player.faceDownCards.length) return state;
 
   const card = player.faceDownCards[cardIndex];
-  const topCard = state.pyre.length > 0 ? state.pyre[state.pyre.length - 1] : null;
 
   // Remove card from face-down
   const newFaceDownCards = [...player.faceDownCards];
   newFaceDownCards.splice(cardIndex, 1);
 
   // Check if the card can be played
-  const canPlay = isValidPlay([card], topCard);
+  const canPlay = isValidPlay([card], state.pyre);
   const shouldBurn = isBurnCard(card);
   const shouldReverse = isReverseCard(card);
 
