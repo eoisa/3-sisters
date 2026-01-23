@@ -232,12 +232,10 @@ export function playCards(state: GameState, playerId: string, cardIds: string[])
     };
   }
 
-  // Burn ends turn, reverse uses new direction
-  const nextPlayerIndex = getNextPlayerIndex(
-    state.currentPlayerIndex,
-    state.players.length,
-    newDirection
-  );
+  // Burn does NOT advance - player gets to start the new pyre
+  const nextPlayerIndex = shouldBurn
+    ? state.currentPlayerIndex
+    : getNextPlayerIndex(state.currentPlayerIndex, state.players.length, newDirection);
 
   return {
     ...state,
@@ -313,11 +311,12 @@ export function flipFaceDown(state: GameState, playerId: string, cardIndex: numb
 
   if (canPlay) {
     if (shouldBurn) {
+      // Burn - player gets to start the new pyre
       newPyre = [];
       newDiscardPile = [...state.discardPile, ...state.pyre, card];
       newHand = [];
       actionType = 'burn';
-      nextPlayerIndex = getNextPlayerIndex(state.currentPlayerIndex, state.players.length, state.direction);
+      nextPlayerIndex = state.currentPlayerIndex;
     } else if (shouldReverse) {
       newPyre = [...state.pyre, card];
       newDiscardPile = state.discardPile;
@@ -389,6 +388,9 @@ export function playFaceUpCards(state: GameState, playerId: string, cardIds: str
   // Can only play face-up cards when hand is empty
   if (player.hand.length > 0) return null;
 
+  // Face-up cards can only be played one at a time
+  if (cardIds.length !== 1) return null;
+
   const cardsToPlay = cardIds
     .map((id) => player.faceUpCards.find((c) => c.id === id))
     .filter((c): c is Card => c !== undefined);
@@ -444,11 +446,10 @@ export function playFaceUpCards(state: GameState, playerId: string, cardIds: str
     };
   }
 
-  const nextPlayerIndex = getNextPlayerIndex(
-    state.currentPlayerIndex,
-    state.players.length,
-    newDirection
-  );
+  // Burn does NOT advance - player gets to start the new pyre
+  const nextPlayerIndex = shouldBurn
+    ? state.currentPlayerIndex
+    : getNextPlayerIndex(state.currentPlayerIndex, state.players.length, newDirection);
 
   return {
     ...state,

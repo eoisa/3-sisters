@@ -59,7 +59,7 @@ export function HowToPlay({ onBack }: HowToPlayProps) {
           <ul style={{ opacity: 0.9, lineHeight: 1.8, paddingLeft: '20px' }}>
             <li><strong>2s (Wild)</strong> - Can be played on any card. The next player must still beat the last non-wild card.</li>
             <li><strong>8s (Reverse)</strong> - Reverses the direction of play. The next player must still beat the last non-wild card.</li>
-            <li><strong>10s (Burn)</strong> - Discards the entire pyre and ends your turn</li>
+            <li><strong>10s (Burn)</strong> - Discards the entire pyre. You get to start the new pyre.</li>
           </ul>
         </section>
 
@@ -69,7 +69,7 @@ export function HowToPlay({ onBack }: HowToPlayProps) {
             <li>Play a card equal to or higher than the top card of the pyre</li>
             <li>You can play multiple cards if they're the same rank</li>
             <li>If you can't play, pick up the entire pyre</li>
-            <li>When your hand is empty, play your face-up cards</li>
+            <li>When your hand is empty, play your face-up cards one at a time</li>
             <li>When face-up cards are gone, flip face-down cards one at a time</li>
           </ul>
         </section>

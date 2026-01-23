@@ -453,7 +453,7 @@ describe('gameReducer', () => {
       expect(newState.turnHistory[0].type).toBe('burn');
     });
 
-    it('advances to next player after burn (burn ends turn)', () => {
+    it('keeps current player after burn (player starts new pyre)', () => {
       const state = createPlayingState({
         currentPlayerIndex: 0,
         players: [
@@ -469,7 +469,8 @@ describe('gameReducer', () => {
         cardIds: ['hearts-10'],
       });
 
-      expect(newState.currentPlayerIndex).toBe(1);
+      // Player who burns gets to start the new pyre
+      expect(newState.currentPlayerIndex).toBe(0);
     });
   });
 

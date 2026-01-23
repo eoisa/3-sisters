@@ -54,21 +54,12 @@ export function PlayerArea({
   const handleFaceUpCardClick = (cardId: string) => {
     if (!isCurrentPlayer || !playingFaceUp) return;
 
+    // Face-up cards can only be played one at a time - toggle single selection
     setSelectedFaceUpCardIds((prev) => {
       if (prev.includes(cardId)) {
-        return prev.filter((id) => id !== cardId);
+        return [];
       }
-
-      // Check if the new card has the same rank as selected cards
-      if (prev.length > 0) {
-        const firstCard = getCardById(player.faceUpCards, prev[0]);
-        const newCard = getCardById(player.faceUpCards, cardId);
-        if (firstCard && newCard && firstCard.rank !== newCard.rank) {
-          return [cardId];
-        }
-      }
-
-      return [...prev, cardId];
+      return [cardId];
     });
   };
 

@@ -17,7 +17,7 @@ Just a vibe-coded starter project to emulate the card game "3 sisters"
 
 - **2s** - Wild cards. Can be played at any time. The next player must still beat the last non-wild card.
 - **8s** - Reverse wild cards. Reverses the direction of play. The next player must still beat the last non-wild card.
-- **10s** - "Burn the pyre." Discards all cards currently in play and ends your turn.
+- **10s** - "Burn the pyre." Discards all cards currently in play. You get to start the new pyre.
 
 ### Setup
 
@@ -34,11 +34,11 @@ Just a vibe-coded starter project to emulate the card game "3 sisters"
 3. **Special plays:**
    - Play a **2** (wild) at any time - skips to the next player, but they must still beat the last non-wild card.
    - Play an **8** (reverse) at any time - reverses the direction of play, but the next player must still beat the last non-wild card.
-   - Play a **10** at any time - burns the pyre (discards all cards in play) and ends your turn.
+   - Play a **10** at any time - burns the pyre (discards all cards in play) and you get to start the new pyre.
 
 4. **Picking up the pyre:** If you cannot play a card higher than the last one played (and don't have a 2, 8, or 10), you must pick up all cards in the pyre and add them to your hand.
 
-5. **Face-up cards:** Once your hand is empty, you begin playing your face-up cards. These are visible to all players, so choose wisely!
+5. **Face-up cards:** Once your hand is empty, you begin playing your face-up cards one at a time. These are visible to all players, so choose wisely!
 
 6. **Face-down cards:** Once both your hand and face-up cards are empty, you begin playing your face-down cards. On your turn, choose one face-down card and flip it to play it.
 

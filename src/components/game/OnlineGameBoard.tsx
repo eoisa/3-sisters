@@ -70,20 +70,12 @@ export function OnlineGameBoard({
   const handleFaceUpCardClick = (cardId: string) => {
     if (!isMyTurn || !playingFaceUp) return;
 
+    // Face-up cards can only be played one at a time - toggle single selection
     setSelectedFaceUpCardIds((prev) => {
       if (prev.includes(cardId)) {
-        return prev.filter((id) => id !== cardId);
+        return [];
       }
-
-      if (prev.length > 0) {
-        const firstCard = getCardById(gameState.yourFaceUpCards, prev[0]);
-        const newCard = getCardById(gameState.yourFaceUpCards, cardId);
-        if (firstCard && newCard && firstCard.rank !== newCard.rank) {
-          return [cardId];
-        }
-      }
-
-      return [...prev, cardId];
+      return [cardId];
     });
   };
 

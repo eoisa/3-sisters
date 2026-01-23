@@ -22,7 +22,7 @@ export function getAIDecision(
     return { action: 'pickup' };
   }
 
-  // If hand is empty but has face-up cards, play from face-up
+  // If hand is empty but has face-up cards, play from face-up (one at a time)
   if (player.hand.length === 0 && player.faceUpCards.length > 0) {
     const playableFaceUpCards = findPlayableCards(player.faceUpCards, state.pyre);
 
@@ -30,16 +30,15 @@ export function getAIDecision(
       return { action: 'pickup' };
     }
 
-    // Use same strategy as hand cards
-    const cardsToPlay = chooseCardsToPlay(playableFaceUpCards, state.pyre, difficulty);
-
-    if (cardsToPlay.length === 0) {
-      return { action: 'pickup' };
-    }
+    // Face-up cards can only be played one at a time - pick the best single card
+    const sortedPlayable = sortCardsByRank(playableFaceUpCards);
+    const cardToPlay = difficulty === 'hard'
+      ? sortedPlayable[0]  // Hard: play lowest playable
+      : sortedPlayable[sortedPlayable.length - 1];  // Easy/Medium: play highest
 
     return {
       action: 'playFaceUp',
-      cardIds: cardsToPlay.map((c) => c.id),
+      cardIds: [cardToPlay.id],
     };
   }
 

@@ -223,12 +223,11 @@ function playCards(state: GameState, playerId: string, cardIds: string[]): GameS
     };
   }
 
-  // Move to next player (burn ends turn, reverse uses new direction)
-  const nextPlayerIndex = getNextPlayerIndex(
-    state.currentPlayerIndex,
-    state.players.length,
-    newDirection
-  );
+  // Move to next player (reverse uses new direction)
+  // Burn does NOT advance - player gets to start the new pyre
+  const nextPlayerIndex = shouldBurn
+    ? state.currentPlayerIndex
+    : getNextPlayerIndex(state.currentPlayerIndex, state.players.length, newDirection);
 
   return {
     ...state,
@@ -254,6 +253,9 @@ function playFaceUpCards(state: GameState, playerId: string, cardIds: string[]):
 
   // Must have face-up cards to play
   if (player.faceUpCards.length === 0) return state;
+
+  // Face-up cards can only be played one at a time
+  if (cardIds.length !== 1) return state;
 
   const cardsToPlay = cardIds
     .map((id) => getCardById(player.faceUpCards, id))
@@ -318,11 +320,10 @@ function playFaceUpCards(state: GameState, playerId: string, cardIds: string[]):
     };
   }
 
-  const nextPlayerIndex = getNextPlayerIndex(
-    state.currentPlayerIndex,
-    state.players.length,
-    newDirection
-  );
+  // Burn does NOT advance - player gets to start the new pyre
+  const nextPlayerIndex = shouldBurn
+    ? state.currentPlayerIndex
+    : getNextPlayerIndex(state.currentPlayerIndex, state.players.length, newDirection);
 
   return {
     ...state,
@@ -404,12 +405,12 @@ function flipFaceDown(state: GameState, playerId: string, cardIndex: number): Ga
 
   if (canPlay) {
     if (shouldBurn) {
-      // Burn the pyre - turn ends
+      // Burn the pyre - player gets to start the new pyre
       newPyre = [];
       newDiscardPile = [...state.discardPile, ...state.pyre, card];
       newHand = [];
       actionType = 'burn';
-      nextPlayerIndex = getNextPlayerIndex(state.currentPlayerIndex, state.players.length, state.direction);
+      nextPlayerIndex = state.currentPlayerIndex;
     } else if (shouldReverse) {
       // Reverse direction
       newPyre = [...state.pyre, card];
