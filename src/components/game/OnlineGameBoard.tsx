@@ -6,7 +6,7 @@ import { Pyre } from './Pyre';
 import { TurnIndicator } from './TurnIndicator';
 import { GameLog } from './GameLog';
 import { SUIT_SYMBOLS } from '../../constants';
-import { isValidPlay, getCardById } from '../../utils';
+import { isValidPlay, getCardById, getSpecialCardEffect } from '../../utils';
 
 interface OnlineGameBoardProps {
   gameState: OnlineGameState;
@@ -121,6 +121,24 @@ export function OnlineGameBoard({
     return isValidPlay(cards, gameState.pyre);
   };
 
+  // Get the special effect message for selected cards
+  const getSelectedCardEffect = (): string | null => {
+    if (selectedCardIds.length === 0) return null;
+    const firstCard = getCardById(gameState.yourHand, selectedCardIds[0]);
+    if (!firstCard) return null;
+    return getSpecialCardEffect(firstCard);
+  };
+
+  const getSelectedFaceUpEffect = (): string | null => {
+    if (selectedFaceUpCardIds.length === 0) return null;
+    const firstCard = getCardById(gameState.yourFaceUpCards, selectedFaceUpCardIds[0]);
+    if (!firstCard) return null;
+    return getSpecialCardEffect(firstCard);
+  };
+
+  const selectedEffect = getSelectedCardEffect();
+  const selectedFaceUpEffect = getSelectedFaceUpEffect();
+
   return (
     <div
       style={{
@@ -198,49 +216,54 @@ export function OnlineGameBoard({
           border: isMyTurn ? '3px solid #4caf50' : '3px solid transparent',
         }}
       >
-        <div style={{ marginBottom: '16px', textAlign: 'center', color: 'white' }}>
-          <h3 style={{ margin: '0 0 8px 0' }}>Your Cards</h3>
+        <div style={{ marginBottom: '12px', textAlign: 'center', color: 'white' }}>
           {isMyTurn && (
             <span
               style={{
+                display: 'inline-block',
                 background: '#4caf50',
                 padding: '4px 12px',
                 borderRadius: '12px',
                 fontSize: '12px',
                 fontWeight: 600,
+                marginBottom: '4px',
               }}
             >
               Your Turn
             </span>
           )}
+          <h3 style={{ margin: 0 }}>Your Cards</h3>
         </div>
 
-        {/* Face-down cards */}
-        {gameState.yourFaceDownCards.length > 0 && (
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', marginBottom: '8px', textAlign: 'center' }}>
-              Face-down cards
+        {/* Table cards - face-down with face-up overlapping on top */}
+        {(gameState.yourFaceDownCards.length > 0 || gameState.yourFaceUpCards.length > 0) && (
+          <div style={{ marginBottom: '16px', paddingTop: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+              {gameState.yourFaceDownCards.map((card, index) => {
+                const faceUpCard = gameState.yourFaceUpCards[index];
+                return (
+                  <div key={card.id} style={{ position: 'relative' }}>
+                    {/* Face-down card (bottom) */}
+                    <FaceDownCards
+                      cards={[card]}
+                      selectable={isMyTurn && playingFaceDown && !faceUpCard}
+                      onCardClick={() => onFlipFaceDown(index)}
+                    />
+                    {/* Face-up card overlapping on top */}
+                    {faceUpCard && (
+                      <div style={{ position: 'absolute', top: '-20px', left: '0' }}>
+                        <FaceUpCards
+                          cards={[faceUpCard]}
+                          selectedCardIds={selectedFaceUpCardIds}
+                          selectable={isMyTurn && playingFaceUp}
+                          onCardClick={handleFaceUpCardClick}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-            <FaceDownCards
-              cards={gameState.yourFaceDownCards}
-              selectable={isMyTurn && playingFaceDown}
-              onCardClick={onFlipFaceDown}
-            />
-          </div>
-        )}
-
-        {/* Face-up cards */}
-        {gameState.yourFaceUpCards.length > 0 && (
-          <div style={{ marginBottom: '16px' }}>
-            <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', marginBottom: '8px', textAlign: 'center' }}>
-              Face-up cards
-            </div>
-            <FaceUpCards
-              cards={gameState.yourFaceUpCards}
-              selectedCardIds={selectedFaceUpCardIds}
-              onCardClick={handleFaceUpCardClick}
-              selectable={isMyTurn && playingFaceUp}
-            />
           </div>
         )}
 
@@ -252,6 +275,24 @@ export function OnlineGameBoard({
             onCardClick={handleCardClick}
             disabled={!isMyTurn}
           />
+        )}
+
+        {/* Special card effect indicator for hand */}
+        {isMyTurn && selectedEffect && (
+          <div
+            style={{
+              textAlign: 'center',
+              marginTop: '12px',
+              padding: '6px 12px',
+              background: 'rgba(255, 193, 7, 0.2)',
+              borderRadius: '8px',
+              color: '#ffc107',
+              fontSize: '12px',
+              fontWeight: 600,
+            }}
+          >
+            {selectedEffect}
+          </div>
         )}
 
         {/* Action buttons - Hand */}
@@ -278,6 +319,24 @@ export function OnlineGameBoard({
             >
               Pick Up Pyre
             </Button>
+          </div>
+        )}
+
+        {/* Special card effect indicator for face-up */}
+        {isMyTurn && playingFaceUp && selectedFaceUpEffect && (
+          <div
+            style={{
+              textAlign: 'center',
+              marginTop: '12px',
+              padding: '6px 12px',
+              background: 'rgba(255, 193, 7, 0.2)',
+              borderRadius: '8px',
+              color: '#ffc107',
+              fontSize: '12px',
+              fontWeight: 600,
+            }}
+          >
+            {selectedFaceUpEffect}
           </div>
         )}
 

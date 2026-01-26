@@ -19,7 +19,6 @@ export function FaceDownCards({
           key={card.id}
           card={card}
           faceDown
-          disabled={!selectable}
           onClick={selectable ? () => onCardClick?.(index) : undefined}
           className={selectable ? 'card--selectable' : ''}
         />

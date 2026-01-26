@@ -3,7 +3,7 @@ import type { Player, Card } from '../../types';
 import { CardHand, FaceDownCards, FaceUpCards } from '../card';
 import { Button } from '../ui';
 import { isPlayingFaceDown, isPlayingFaceUp } from '../../game';
-import { isValidPlay, getCardById } from '../../utils';
+import { isValidPlay, getCardById, getSpecialCardEffect } from '../../utils';
 
 interface PlayerAreaProps {
   player: Player;
@@ -105,6 +105,24 @@ export function PlayerArea({
     return isValidPlay(cards, pyre);
   };
 
+  // Get the special effect message for selected cards
+  const getSelectedCardEffect = (): string | null => {
+    if (selectedCardIds.length === 0) return null;
+    const firstCard = getCardById(player.hand, selectedCardIds[0]);
+    if (!firstCard) return null;
+    return getSpecialCardEffect(firstCard);
+  };
+
+  const getSelectedFaceUpEffect = (): string | null => {
+    if (selectedFaceUpCardIds.length === 0) return null;
+    const firstCard = getCardById(player.faceUpCards, selectedFaceUpCardIds[0]);
+    if (!firstCard) return null;
+    return getSpecialCardEffect(firstCard);
+  };
+
+  const selectedEffect = getSelectedCardEffect();
+  const selectedFaceUpEffect = getSelectedFaceUpEffect();
+
   return (
     <div
       style={{
@@ -114,65 +132,54 @@ export function PlayerArea({
         border: isCurrentPlayer ? '3px solid #4caf50' : '3px solid transparent',
       }}
     >
-      <div style={{ marginBottom: '16px', textAlign: 'center', color: 'white' }}>
-        <h3 style={{ margin: '0 0 8px 0' }}>{player.name}</h3>
+      <div style={{ marginBottom: '12px', textAlign: 'center', color: 'white' }}>
         {isCurrentPlayer && (
           <span
             style={{
+              display: 'inline-block',
               background: '#4caf50',
               padding: '4px 12px',
               borderRadius: '12px',
               fontSize: '12px',
               fontWeight: 600,
+              marginBottom: '4px',
             }}
           >
             Your Turn
           </span>
         )}
+        <h3 style={{ margin: 0 }}>{player.name}</h3>
       </div>
 
-      {/* Face-down cards */}
-      {player.faceDownCards.length > 0 && (
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px', marginBottom: '8px', textAlign: 'center' }}>
-            Face-down cards
+      {/* Table cards - face-down with face-up overlapping on top */}
+      {(player.faceDownCards.length > 0 || player.faceUpCards.length > 0) && (
+        <div style={{ marginBottom: '16px', paddingTop: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+            {player.faceDownCards.map((card, index) => {
+              const faceUpCard = player.faceUpCards[index];
+              return (
+                <div key={card.id} style={{ position: 'relative' }}>
+                  {/* Face-down card (bottom) */}
+                  <FaceDownCards
+                    cards={[card]}
+                    selectable={isCurrentPlayer && playingFaceDown && !faceUpCard}
+                    onCardClick={() => onFlipFaceDown(index)}
+                  />
+                  {/* Face-up card overlapping on top */}
+                  {faceUpCard && (
+                    <div style={{ position: 'absolute', top: '-20px', left: '0' }}>
+                      <FaceUpCards
+                        cards={[faceUpCard]}
+                        selectedCardIds={selectedFaceUpCardIds}
+                        selectable={isCurrentPlayer && playingFaceUp}
+                        onCardClick={handleFaceUpCardClick}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          <FaceDownCards
-            cards={player.faceDownCards}
-            selectable={isCurrentPlayer && playingFaceDown}
-            onCardClick={onFlipFaceDown}
-          />
-        </div>
-      )}
-
-      {/* Face-up cards (table cards) */}
-      {player.faceUpCards.length > 0 && (
-        <div
-          style={{
-            marginBottom: '16px',
-            padding: '12px',
-            background: 'rgba(255, 193, 7, 0.1)',
-            borderRadius: '8px',
-            border: '1px solid rgba(255, 193, 7, 0.3)',
-          }}
-        >
-          <div
-            style={{
-              color: 'rgba(255, 193, 7, 0.9)',
-              fontSize: '12px',
-              marginBottom: '8px',
-              textAlign: 'center',
-              fontWeight: 600,
-            }}
-          >
-            Table Cards
-          </div>
-          <FaceUpCards
-            cards={player.faceUpCards}
-            selectedCardIds={selectedFaceUpCardIds}
-            selectable={isCurrentPlayer && playingFaceUp}
-            onCardClick={handleFaceUpCardClick}
-          />
         </div>
       )}
 
@@ -184,6 +191,24 @@ export function PlayerArea({
           onCardClick={handleCardClick}
           disabled={!isCurrentPlayer}
         />
+      )}
+
+      {/* Special card effect indicator */}
+      {isCurrentPlayer && selectedEffect && (
+        <div
+          style={{
+            textAlign: 'center',
+            marginTop: '12px',
+            padding: '6px 12px',
+            background: 'rgba(255, 193, 7, 0.2)',
+            borderRadius: '8px',
+            color: '#ffc107',
+            fontSize: '12px',
+            fontWeight: 600,
+          }}
+        >
+          {selectedEffect}
+        </div>
       )}
 
       {/* Action buttons for hand play */}
@@ -210,6 +235,24 @@ export function PlayerArea({
           >
             Pick Up Pyre
           </Button>
+        </div>
+      )}
+
+      {/* Special card effect indicator for face-up */}
+      {isCurrentPlayer && playingFaceUp && selectedFaceUpEffect && (
+        <div
+          style={{
+            textAlign: 'center',
+            marginTop: '12px',
+            padding: '6px 12px',
+            background: 'rgba(255, 193, 7, 0.2)',
+            borderRadius: '8px',
+            color: '#ffc107',
+            fontSize: '12px',
+            fontWeight: 600,
+          }}
+        >
+          {selectedFaceUpEffect}
         </div>
       )}
 

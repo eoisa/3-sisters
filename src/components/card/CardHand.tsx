@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import type { Card as CardType } from '../../types';
 import { Card } from './Card';
-import { sortCardsByRank } from '../../utils';
+import { sortCardsForHand } from '../../utils';
 
 interface CardHandProps {
   cards: CardType[];
@@ -24,7 +24,7 @@ export function CardHand({
 }: CardHandProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [overlap, setOverlap] = useState(MAX_OVERLAP);
-  const displayCards = sortCards ? sortCardsByRank(cards) : cards;
+  const displayCards = sortCards ? sortCardsForHand(cards) : cards;
 
   useEffect(() => {
     const calculateOverlap = () => {

@@ -71,3 +71,38 @@ export function compareCards(a: Card, b: Card): number {
 export function sortCardsByRank(cards: Card[]): Card[] {
   return [...cards].sort(compareCards);
 }
+
+/**
+ * Sort cards with special cards (2s, 8s, 10s) moved to the right.
+ * Normal cards are sorted by rank, then special cards are appended.
+ */
+export function sortCardsForHand(cards: Card[]): Card[] {
+  const normalCards: Card[] = [];
+  const specialCards: Card[] = [];
+
+  for (const card of cards) {
+    if (card.rank === WILD_RANK || card.rank === BURN_RANK || card.rank === REVERSE_RANK) {
+      specialCards.push(card);
+    } else {
+      normalCards.push(card);
+    }
+  }
+
+  // Sort normal cards by rank
+  normalCards.sort(compareCards);
+  // Sort special cards by rank (8s, then 10s, then 2s)
+  specialCards.sort(compareCards);
+
+  return [...normalCards, ...specialCards];
+}
+
+export function isSpecialCard(card: Card): boolean {
+  return card.rank === WILD_RANK || card.rank === BURN_RANK || card.rank === REVERSE_RANK;
+}
+
+export function getSpecialCardEffect(card: Card): string | null {
+  if (card.rank === WILD_RANK) return 'Skips turn';
+  if (card.rank === REVERSE_RANK) return 'Reverses flow';
+  if (card.rank === BURN_RANK) return 'Burns pyre';
+  return null;
+}

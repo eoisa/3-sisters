@@ -203,23 +203,37 @@
 }
 
 .face-down-cards .card {
+  cursor: default;
+  pointer-events: none;
+}
+
+.face-down-cards .card--selectable {
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .face-down-cards .card--selectable:hover .card__inner {
   transform: rotateY(180deg) translateY(-8px) scale(1.05);
 }
 
-/* Face up cards display (table cards) */
+/* Face up cards display (table cards) - stacked on face-down */
 .face-up-cards {
   display: flex;
-  gap: 8px;
   justify-content: center;
-  flex-wrap: wrap;
 }
 
 .face-up-cards .card {
+  cursor: default;
+  pointer-events: none;
+}
+
+.face-up-cards .card--selectable {
   cursor: pointer;
+  pointer-events: auto;
+}
+
+.face-up-cards .card--selectable:hover {
+  z-index: var(--z-card-hover);
 }
 
 .face-up-cards .card--selectable:hover .card__inner {

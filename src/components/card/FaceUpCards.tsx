@@ -24,7 +24,6 @@ export function FaceUpCards({
           key={card.id}
           card={card}
           selected={selectedCardIds.includes(card.id)}
-          disabled={!selectable}
           onClick={selectable && onCardClick ? () => onCardClick(card.id) : undefined}
           className={selectable ? 'card--selectable' : ''}
         />
